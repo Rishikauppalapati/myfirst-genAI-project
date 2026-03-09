@@ -15,6 +15,19 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend", 
 
 st.set_page_config(page_title="AI Restaurant Recommender", page_icon="🍽️", layout="centered")
 
+# Custom CSS for UI polish
+st.markdown("""
+<style>
+/* Make sure dropdowns show a pointer hand cursor */
+div[data-baseweb="select"] {
+    cursor: pointer !important;
+}
+div[data-baseweb="select"] * {
+    cursor: pointer !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 @st.cache_data
 def get_dropdown_options():
     df = load_catalog()
@@ -107,7 +120,7 @@ def main():
                     st.warning("No restaurants found matching your criteria even after relaxing filters. Try modifying your search.")
                 else:
                     st.success("Here are your recommendations!")
-                    st.markdown(f"**Insight:** {explanation}")
+                    # The user requested to remove the visible insight text but keep it clean
                     
                     fallback_images = [
                         'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80',
@@ -135,7 +148,19 @@ def main():
                                     display_place = f"{display_place}, {place}"
                                 st.write(f"**Place:** {display_place}")
                                 
-                                formatted_price = f"₹{r.get('price')}" if isinstance(r.get('price'), (int, float)) or (isinstance(r.get('price'), str) and r.get('price').replace('.','',1).isdigit()) else str(r.get('price') or 'N/A')
+                                raw_price = r.get('price')
+                                formatted_price = "N/A"
+                                if raw_price:
+                                    if isinstance(raw_price, (int, float)):
+                                        formatted_price = f"₹{raw_price}"
+                                    elif isinstance(raw_price, str):
+                                        # Extract digits if it's a string like "800 for two"
+                                        digits = ''.join(c for c in raw_price if c.isdigit())
+                                        if digits:
+                                            formatted_price = f"₹{digits}"
+                                        else:
+                                            formatted_price = raw_price
+                                            
                                 st.write(f"**Style:** {', '.join(r.get('cuisines', []))}")
                                 st.write(f"**Price Approx:** {formatted_price}")
                                 
