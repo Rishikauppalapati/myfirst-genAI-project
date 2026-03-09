@@ -47,11 +47,22 @@ def get_dropdown_options():
     cuisines = sorted(list(cuisines_set))
     return ["Any"] + places, cuisines
 
+@st.cache_data
+def get_price_lookup():
+    df = load_catalog()
+    lookup = {}
+    if "average_cost_for_two" in df.columns and "name" in df.columns:
+        for name, cost in zip(df["name"], df["average_cost_for_two"]):
+            if name == name and cost == cost:  # Not NaN
+                lookup[str(name).lower().strip()] = cost
+    return lookup
+
 def main():
     st.title("🍽️ AI Restaurant Recommender")
     st.markdown("Find the best restaurants matching your exact preferences, powered by AI.")
 
     options_places, options_cuisines = get_dropdown_options()
+    price_lookup = get_price_lookup()
 
     with st.sidebar:
         st.header("Your Preferences")
@@ -150,14 +161,21 @@ def main():
                                 
                                 raw_price = r.get('price')
                                 formatted_price = "N/A"
+                                
+                                # Try to get price from dataset lookup if it's missing or N/A
+                                if not raw_price or str(raw_price) == 'N/A' or str(raw_price).strip() == '':
+                                    name_key = r.get('name', '').lower().strip()
+                                    if name_key in price_lookup:
+                                        raw_price = price_lookup[name_key]
+                                
                                 if raw_price:
                                     if isinstance(raw_price, (int, float)):
-                                        formatted_price = f"₹{raw_price}"
+                                        formatted_price = f"₹{int(raw_price)} for 2"
                                     elif isinstance(raw_price, str):
                                         # Extract digits if it's a string like "800 for two"
                                         digits = ''.join(c for c in raw_price if c.isdigit())
                                         if digits:
-                                            formatted_price = f"₹{digits}"
+                                            formatted_price = f"₹{digits} for 2"
                                         else:
                                             formatted_price = raw_price
                                             
