@@ -77,11 +77,11 @@ def main():
             "Medium (₹500 - ₹1000)": "medium",
             "High (Above ₹1000)": "high"
         }
-        price_selection = st.selectbox("Budget/Price Category", list(price_options.keys()))
+        price_selection = st.select_slider("Budget/Price Category", options=list(price_options.keys()))
         price_category = price_options[price_selection]
         
         min_rating = st.slider("Minimum Rating", 1.0, 5.0, 4.0, 0.1)
-        top_k = st.slider("Number of Recommendations", 1, 10, 5, 1)
+        top_k = 5  # Fixed to 5, hidden from user
 
     if st.button("Find Restaurants", type="primary"):
         prefs = UserPreferences(
@@ -180,14 +180,17 @@ def main():
                                 
                                 if raw_price:
                                     if isinstance(raw_price, (int, float)):
-                                        formatted_price = f"₹{int(raw_price)} for 2"
+                                        formatted_price = f"~ ₹{int(raw_price)} for 2"
                                     elif isinstance(raw_price, str):
                                         # Extract digits if it's a string like "800 for two"
                                         digits = ''.join(c for c in raw_price if c.isdigit())
                                         if digits:
-                                            formatted_price = f"₹{digits} for 2"
+                                            formatted_price = f"~ ₹{digits} for 2"
                                         else:
-                                            formatted_price = raw_price
+                                            # If there's some text but no digits, it might be literally 'N/A'
+                                            formatted_price = raw_price if "n/a" not in raw_price.lower() else "Price Varies"
+                                else:
+                                    formatted_price = "Price Varies"
                                             
                                 st.write(f"**Cuisines:** {', '.join(r.get('cuisines', []))}")
                                 st.write(f"**Price Approx:** {formatted_price}")
