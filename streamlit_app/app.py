@@ -71,7 +71,14 @@ def main():
         
         cuisines = st.multiselect("Cuisines", options_cuisines, placeholder="Select cuisines")
         
-        price_category = st.selectbox("Budget/Price Category", ["Any", "low", "medium", "high"])
+        price_options = {
+            "Any": "Any",
+            "Low (Below ₹500)": "low",
+            "Medium (₹500 - ₹1000)": "medium",
+            "High (Above ₹1000)": "high"
+        }
+        price_selection = st.selectbox("Budget/Price Category", list(price_options.keys()))
+        price_category = price_options[price_selection]
         
         min_rating = st.slider("Minimum Rating", 1.0, 5.0, 4.0, 0.1)
         top_k = st.slider("Number of Recommendations", 1, 10, 5, 1)
