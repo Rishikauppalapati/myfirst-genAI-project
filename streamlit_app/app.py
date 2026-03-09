@@ -159,14 +159,17 @@ def main():
                                     display_place = f"{display_place}, {place}"
                                 st.write(f"**Place:** {display_place}")
                                 
-                                raw_price = r.get('price')
+                                raw_price = None
                                 formatted_price = "N/A"
                                 
-                                # Try to get price from dataset lookup if it's missing or N/A
+                                # ALWAYS Prefer the actual catalog dataset price over the LLM hallucination
+                                name_key = r.get('name', '').lower().strip()
+                                if name_key in price_lookup:
+                                    raw_price = price_lookup[name_key]
+                                
+                                # If missing from catalog, gracefully fall back to LLM's guess
                                 if not raw_price or str(raw_price) == 'N/A' or str(raw_price).strip() == '':
-                                    name_key = r.get('name', '').lower().strip()
-                                    if name_key in price_lookup:
-                                        raw_price = price_lookup[name_key]
+                                    raw_price = r.get('price')
                                 
                                 if raw_price:
                                     if isinstance(raw_price, (int, float)):
