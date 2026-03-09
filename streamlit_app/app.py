@@ -182,20 +182,17 @@ def main():
                                         else:
                                             formatted_price = raw_price
                                             
-                                st.write(f"**Style:** {', '.join(r.get('cuisines', []))}")
+                                st.write(f"**Cuisines:** {', '.join(r.get('cuisines', []))}")
                                 st.write(f"**Price Approx:** {formatted_price}")
                                 
                             with c2:
-                                if r.get('summary'):
-                                    st.info(f"**Overview:** {r.get('summary')}")
-                            
-                            st.markdown("#### Why Recommended?")
-                            why = r.get("why_recommended", [])
-                            if isinstance(why, list):
-                                for reason in why:
-                                    st.markdown(f"- {reason}")
-                            else:
-                                st.write(why)
+                                st.markdown("#### Overview")
+                                why = r.get("why_recommended", [])
+                                if isinstance(why, list):
+                                    for reason in why:
+                                        st.markdown(f"- {reason}")
+                                else:
+                                    st.write(why)
                                 
                             consider_if = r.get("consider_if")
                             if consider_if:
