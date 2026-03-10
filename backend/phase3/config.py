@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 @dataclass
 class GroqConfig:
     api_key_env: str = "GROQ_API_KEY"
-    model: str = "llama3-8b-8192"
+    model: str = "llama-3.1-8b-instant"
     temperature: float = 0.2
     max_output_tokens: int = 1024
 

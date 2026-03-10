@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const explanationText = document.getElementById('explanation-text');
     const loadingState = document.getElementById('loading-state');
     const errorState = document.getElementById('error-state');
-    const errorMessage = document.getElementById('errorMessage');
+    const errorMessage = document.getElementById('error-message');
     const recommendationsGrid = document.getElementById('recommendations-grid');
 
     // Update rating display when slider moves
@@ -49,6 +49,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.textContent = cuisine;
                 cuisineSelect.appendChild(option);
             });
+
+            // Initialize Choices.js after populating options
+            if (window.Choices) {
+                // Remove any manual styling that might make it look like a listbox
+                cuisineSelect.style.height = 'auto';
+                cuisineSelect.style.display = 'none';
+
+                new Choices(cuisineSelect, {
+                    removeItemButton: true,
+                    placeholder: true,
+                    placeholderValue: 'Select cuisines...',
+                    searchEnabled: true,
+                    itemSelectText: '',
+                });
+            }
         } catch (error) {
             console.error('Error fetching options:', error);
             document.getElementById('place').innerHTML = '<option value="">Error loading places</option>';

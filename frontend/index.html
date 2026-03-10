@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CraveQuest - Find Great Food</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Choices.js CSS for modern multiselect dropdowns -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
     <header class="navbar">
         <div class="logo">
-            <span class="logo-icon">🍽️</span> 
+            <span class="logo-icon">🍽️</span>
             <span class="logo-text">CraveQuest</span>
         </div>
         <nav class="nav-links">
@@ -27,8 +35,8 @@
     <main>
         <section class="hero-section">
             <div class="hero-content">
-                <h1 class="hero-title">Welcome To Find <br>Trusted Restaurants</h1>
-                
+                <h1 class="hero-title">Welcome To Find <br>Restaurants</h1>
+
                 <div class="stats-container" style="gap: 20px; align-items: center;">
                     <div class="stat-item" style="flex-direction: row; gap: 8px;">
                         <span class="stat-icon" style="font-size: 1.5rem;">🥗</span>
@@ -46,7 +54,7 @@
 
                 <div class="search-box">
                     <form id="recommend-form">
-                        
+
                         <div class="input-group">
                             <label for="place">City / Locality</label>
                             <select id="place" name="place">
@@ -55,12 +63,12 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="cuisines">Cuisines (Hold Ctrl/Cmd to select multiple)</label>
-                            <select id="cuisines" name="cuisines" multiple style="height: 100px;">
+                            <label for="cuisines">Cuisines</label>
+                            <select id="cuisines" name="cuisines" multiple>
                                 <option value="">Loading cuisines...</option>
                             </select>
                         </div>
-                        
+
                         <div class="input-group">
                             <label for="price_category">Price Category</label>
                             <select id="price_category" name="price_category">
@@ -73,14 +81,15 @@
 
                         <div class="input-group rating-group">
                             <label for="min_rating">Min Rating: <span id="rating-val">4.0</span></label>
-                            <input type="range" id="min_rating" name="min_rating" min="1" max="5" step="0.1" value="4.0">
+                            <input type="range" id="min_rating" name="min_rating" min="1" max="5" step="0.1"
+                                value="4.0">
                         </div>
 
                         <button type="submit" class="btn-primary search-btn" id="submit-btn">Search Now</button>
                     </form>
                 </div>
             </div>
-            
+
             <div class="hero-image">
                 <!-- Decorative element masking the hero background -->
                 <div class="hero-overlay"></div>
@@ -92,7 +101,7 @@
                 <h2>What Our AI Recommends</h2>
                 <!-- Explanation text removed per user request -->
             </div>
-            
+
             <div class="loading-state" id="loading-state" style="display: none;">
                 <div class="spinner"></div>
                 <p>Curating the perfect options for you...</p>
@@ -112,6 +121,9 @@
         </section>
     </main>
 
+    <!-- Choices.js Script for Multiselect Dropdowns -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
