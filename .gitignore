@@ -24,3 +24,6 @@ dist-ssr/
 
 # Pytest
 .pytest_cache/
+
+# Large Datasets
+backend/data/

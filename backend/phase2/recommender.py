@@ -49,10 +49,10 @@ def _price_ok(row_cost: Optional[float], prefs: UserPreferences) -> bool:
     return True
 
 
-def _filter_catalog(df: pd.DataFrame, prefs: UserPreferences) -> pd.DataFrame:
+def _filter_catalog(df: pd.DataFrame, prefs: UserPreferences, strict_place: bool = True) -> pd.DataFrame:
     filtered = df
 
-    if prefs.place:
+    if strict_place and prefs.place:
         place = prefs.place.lower()
         city_match = filtered["city"].fillna("").str.lower().str.contains(place)
         locality_match = filtered["locality"].fillna("").str.lower().str.contains(place)
@@ -97,16 +97,10 @@ def _rank(
     if filtered.empty:
         return filtered
 
-    w = ranking_weights or DEFAULT_RANKING_WEIGHTS
-    wr = w.get("rating", DEFAULT_RANKING_WEIGHTS["rating"])
-    wv = w.get("votes", DEFAULT_RANKING_WEIGHTS["votes"])
-    wc = w.get("cuisine_match", DEFAULT_RANKING_WEIGHTS["cuisine_match"])
-    wp = w.get("place_match", DEFAULT_RANKING_WEIGHTS["place_match"])
-
     df = filtered.copy()
 
-    rating_norm = df["rating"].fillna(0) / 5.0
-    votes_norm = np.log10(df["votes"].fillna(0) + 1.0)
+    df["rating_clean"] = df["rating"].fillna(0)
+    df["votes_clean"] = df["votes"].fillna(0)
 
     if prefs.cuisines:
         wanted = [c.lower() for c in prefs.cuisines]
@@ -125,26 +119,13 @@ def _rank(
     else:
         cuisine_match = 0.0
 
-    if prefs.place:
-        place = prefs.place.lower()
-
-        def place_score(city: Any, locality: Any) -> float:
-            parts = [
-                str(city).lower() if city is not None else "",
-                str(locality).lower() if locality is not None else "",
-            ]
-            return 1.0 if any(place in p for p in parts) else 0.0
-
-        place_match = [
-            place_score(city, loc) for city, loc in zip(df["city"], df["locality"])
-        ]
-        place_match = pd.Series(place_match, index=df.index)
-    else:
-        place_match = 0.0
-
-    df["score"] = wr * rating_norm + wv * votes_norm + wc * cuisine_match + wp * place_match
-
-    return df.sort_values(by=["score", "rating"], ascending=False)
+    df["cuisine_match"] = cuisine_match
+    
+    # The requirement asks to sort by: Highest rating, then Best match with cuisines, then Popularity.
+    return df.sort_values(
+        by=["rating_clean", "cuisine_match", "votes_clean"], 
+        ascending=[False, False, False]
+    )
 
 
 def recommend(
@@ -155,13 +136,26 @@ def recommend(
     """
     Deterministic recommendation for Phase 2.
     Returns a list of top-k restaurant dicts without any LLM involvement.
-    Phase 4 can pass ranking_weights for tuning.
+    Now prioritizing locality and properly filtering any cuisine matches.
     """
     if catalog_df is None:
         catalog_df = load_catalog()
 
-    filtered = _filter_catalog(catalog_df, prefs)
-    ranked = _rank(filtered, prefs, ranking_weights)
+    # Attempt 1: Strict locality match
+    filtered_strict = _filter_catalog(catalog_df, prefs, strict_place=True)
+    ranked = _rank(filtered_strict, prefs, ranking_weights)
+
+    # If the user specified a place and we didn't get enough results, relax the place filter
+    if prefs.place and len(ranked) < prefs.top_k:
+        filtered_relaxed = _filter_catalog(catalog_df, prefs, strict_place=False)
+        ranked_relaxed = _rank(filtered_relaxed, prefs, ranking_weights)
+        
+        # Combine them, keeping the strictly matching ones first
+        already_in_strict = ranked.index
+        ranked_relaxed_remaining = ranked_relaxed.drop(already_in_strict, errors="ignore")
+        
+        # Append the relaxed ones after the strict ones
+        ranked = pd.concat([ranked, ranked_relaxed_remaining])
 
     if ranked.empty:
         return []

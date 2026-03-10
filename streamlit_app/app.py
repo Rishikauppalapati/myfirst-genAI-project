@@ -69,7 +69,7 @@ def main():
         place_selection = st.selectbox("Place / City / Locality", options_places)
         place = None if place_selection == "Any" else place_selection
         
-        cuisines = st.multiselect("Cuisines", options_cuisines, placeholder="Select cuisines")
+        cuisines = st.multiselect("Cuisines", options_cuisines, placeholder="Select cuisines", max_selections=2)
         
         price_options = {
             "Any": "Any",
@@ -81,7 +81,10 @@ def main():
         price_category = price_options[price_selection]
         
         min_rating = st.slider("Minimum Rating", 1.0, 5.0, 4.0, 0.1)
-        top_k = 5  # Fixed to 5, hidden from user
+        
+        # Ensure we fetch enough candidates, especially if multiple cuisines are selected
+        # The user requested a minimum of 5, or more if multiple preferences are applied.
+        top_k = max(5, len(cuisines) * 2) if cuisines and len(cuisines) > 1 else 5
 
     if st.button("Find Restaurants", type="primary"):
         prefs = UserPreferences(

@@ -9,7 +9,7 @@ from streamlit.testing.v1 import AppTest
 
 def test_phase5_ui_renders_and_responds():
     """Test that the Phase 5 Streamlit UI resolves and basic elements are present."""
-    app_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "phase5", "app.py")
+    app_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "streamlit_app", "app.py")
     
     at = AppTest.from_file(app_path)
     at.run(timeout=15)
@@ -21,8 +21,10 @@ def test_phase5_ui_renders_and_responds():
     assert at.title[0].value == "🍽️ AI Restaurant Recommender"
     
     # Check sidebar elements
-    assert len(at.text_input) >= 2
-    assert "Place / City" in at.text_input[0].label
+    assert len(at.selectbox) >= 1
+    assert "Place / City" in at.selectbox[0].label
+    assert len(at.multiselect) >= 1
+    assert "Cuisines" in at.multiselect[0].label
     
     # Click the button
     at.button[0].click().run(timeout=15)

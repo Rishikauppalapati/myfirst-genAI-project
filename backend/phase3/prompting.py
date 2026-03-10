@@ -30,7 +30,10 @@ def build_user_prompt(prefs: UserPreferences, candidates: List[Dict[str, Any]]) 
         },
         "candidate_restaurants": candidates,
         "instructions": (
-            "Select the best restaurants for the user, explain briefly why each one is recommended, "
+            "Select the best restaurants for the user from the candidates. "
+            "You MUST provide at least 5 recommendations if there are enough candidates, "
+            "and you may provide more if they are highly relevant. "
+            "Explain briefly why each one is recommended, "
             "and provide an overall explanation of how you applied the preferences. "
             "Return ONLY valid JSON with this exact structure for every recommendation:\n"
             "{\n"
