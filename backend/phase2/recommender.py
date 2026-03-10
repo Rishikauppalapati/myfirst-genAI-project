@@ -155,12 +155,17 @@ def recommend(
         if not ranked_strict.empty:
             already_in_strict = ranked_strict.index
             ranked_relaxed_remaining = ranked_relaxed.drop(already_in_strict, errors="ignore")
+            
+            # Tag them
+            ranked_strict = ranked_strict.assign(is_nearby=False)
+            ranked_relaxed_remaining = ranked_relaxed_remaining.assign(is_nearby=True)
+            
             # We strictly keep the user's chosen location results at the VERY TOP
             ranked = pd.concat([ranked_strict, ranked_relaxed_remaining])
         else:
-            ranked = ranked_relaxed
+            ranked = ranked_relaxed.assign(is_nearby=True)
     else:
-        ranked = ranked_strict
+        ranked = ranked_strict.assign(is_nearby=False)
 
     if ranked.empty:
         return []
@@ -176,6 +181,7 @@ def recommend(
         "votes",
         "url",
         "score",
+        "is_nearby"
     ]
     if "average_cost_for_two" in top.columns:
         cols.append("average_cost_for_two")

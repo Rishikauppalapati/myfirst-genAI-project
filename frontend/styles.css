@@ -170,6 +170,9 @@ select[multiple] {
     padding: 0.8rem 0 !important;
     min-height: auto !important;
     border-radius: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
 }
 
 .choices__list--multiple .choices__item {
@@ -177,10 +180,25 @@ select[multiple] {
     border: none !important;
     border-radius: 4px;
     font-size: 0.85rem;
+    padding: 2px 8px !important;
+    margin: 2px !important;
+    color: white !important;
+}
+
+.choices__list--multiple .choices__item.is-highlighted {
+    background-color: var(--secondary-color) !important;
 }
 
 .choices[data-type*="select-multiple"] .choices__inner {
-    padding-bottom: 0.2rem !important;
+    padding-bottom: 0.4rem !important;
+}
+
+.nearby-header h3 {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-color);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
 .input-group {

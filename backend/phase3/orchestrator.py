@@ -26,7 +26,21 @@ def generate_llm_recommendations(prefs: UserPreferences, catalog_df: Any = None)
             "explanation": "No restaurants matched the given preferences in the catalog.",
         }
 
-    return call_groq_for_recommendations(prefs, base_recs)
+    llm_result = call_groq_for_recommendations(prefs, base_recs)
+    
+    # Map back is_nearby from base_recs to llm_result for frontend sectioning
+    nearby_map = {r['restaurant_id']: r.get('is_nearby', False) for r in base_recs}
+    
+    recs = llm_result.get("recommendations", [])
+    for r in recs:
+        rid = r.get("restaurant_id")
+        if rid in nearby_map:
+            r["is_nearby"] = nearby_map[rid]
+        else:
+            # Fallback if ID is missing or mismatched
+            r["is_nearby"] = False
+            
+    return llm_result
 
 
 def main() -> None:
