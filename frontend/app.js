@@ -1,11 +1,14 @@
-const API_URL = 'http://localhost:8000/api';
+// Automatically use relative /api in production, and localhost:8000 in dev
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000/api'
+    : '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const minRatingInput = document.getElementById('min_rating');
     const ratingValDisplay = document.getElementById('rating-val');
     const form = document.getElementById('recommend-form');
-    
+
     const resultsSection = document.getElementById('results-section');
     const resultsHeader = document.getElementById('results-header');
     const explanationText = document.getElementById('explanation-text');
@@ -24,9 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_URL}/options`);
             if (!response.ok) throw new Error('Failed to fetch options');
-            
+
             const data = await response.json();
-            
+
             // Populate places
             const placeSelect = document.getElementById('place');
             placeSelect.innerHTML = '<option value="">Any Place</option>';
@@ -89,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorState.style.display = 'none';
         recommendationsGrid.innerHTML = '';
         loadingState.style.display = 'flex';
-        
+
         // Scroll to results section smoothly
         resultsSection.scrollIntoView({ behavior: 'smooth' });
 
@@ -107,12 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const errorData = await response.json();
                     errorMsg = errorData.detail || errorData.message || errorMsg;
-                } catch (e) {}
+                } catch (e) { }
                 throw new Error(errorMsg);
             }
 
             const data = await response.json();
-            
+
             // Hide loading
             loadingState.style.display = 'none';
 
@@ -133,13 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const ratingValue = rec.rating ? parseFloat(rec.rating).toFixed(1) : 'N/A';
                 const ratingClass = getRatingClass(rec.rating);
-                
+
                 let reasonsHtml = '';
                 if (rec.why_recommended) {
                     reasonsHtml = `<div class="card-reasons">
                         <h4>Why Recommended</h4>
                         <ul>`;
-                    
+
                     if (Array.isArray(rec.why_recommended)) {
                         rec.why_recommended.forEach(reason => {
                             reasonsHtml += `<li>${reason}</li>`;
@@ -178,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'https://images.unsplash.com/photo-1502301103665-0b95cc738daf?w=400&q=80',
                     'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400&q=80'
                 ];
-                
+
                 // Deterministically pick an image based on the restaurant name length + index to simulate randomness without repeating across all cards
                 const nameLength = rec.name ? rec.name.length : Math.floor(Math.random() * 10);
                 const randomId = (nameLength + Math.floor(Math.random() * 100)) % fallbackImages.length;
@@ -189,13 +192,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (displayPlace !== 'N/A') {
                     const placeParts = displayPlace.split(',').map(p => p.trim());
                     let uniqueParts = [...new Set(placeParts)];
-                    
+
                     // If we only have one part (e.g. "Church Street") and it's not the requested city 
                     // AND we have a requested city, append it!
                     if (uniqueParts.length === 1 && reqBody.place && uniqueParts[0].toLowerCase() !== reqBody.place.toLowerCase()) {
                         uniqueParts.push(reqBody.place);
                     }
-                    
+
                     displayPlace = uniqueParts.join(', ');
                 }
 
@@ -219,19 +222,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${considerIfHtml}
                     </div>
                 `;
-                
+
                 recommendationsGrid.appendChild(card);
             });
 
         } catch (error) {
             console.error('Error fetching recommendations:', error);
             loadingState.style.display = 'none';
-            
+
             let displayMsg = error.message;
             if (displayMsg.toLowerCase().includes('fetch')) {
                 displayMsg = 'Failed to connect to the backend API. Please make sure the FastAPI server is running with `uvicorn backend.main:app`';
             }
-            
+
             document.getElementById('error-message').textContent = displayMsg || 'An error occurred while fetching recommendations. Please try again.';
             errorState.style.display = 'flex';
         }
