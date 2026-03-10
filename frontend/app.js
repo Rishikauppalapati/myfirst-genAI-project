@@ -40,26 +40,49 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Populate cuisines
-            const cuisineSelect = document.getElementById('cuisines');
-            cuisineSelect.innerHTML = '<option value="">Any Cuisine</option>';
+            const cuisineList = document.getElementById('cuisines-list');
+            cuisineList.innerHTML = '';
             data.cuisines.forEach(cuisine => {
-                const option = document.createElement('option');
-                option.value = cuisine;
-                option.textContent = cuisine;
-                cuisineSelect.appendChild(option);
+                const label = document.createElement('label');
+                label.className = 'custom-option';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = cuisine;
+
+                // Update selected text when checked
+                checkbox.addEventListener('change', updateCuisinesText);
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(' ' + cuisine));
+                cuisineList.appendChild(label);
             });
 
-            // Initialize Choices.js
-            if (window.Choices) {
-                if (window.cuisinesChoices) window.cuisinesChoices.destroy();
-                window.cuisinesChoices = new Choices(cuisineSelect, {
-                    removeItemButton: true,
-                    placeholder: true,
-                    placeholderValue: 'Select cuisines...',
-                    searchEnabled: true,
-                    itemSelectText: '',
-                    shouldSort: true
-                });
+            // Toggle dropdown
+            const dropdown = document.getElementById('cuisines-dropdown');
+            const selectedText = document.getElementById('cuisines-selected');
+            const list = document.getElementById('cuisines-list');
+
+            selectedText.addEventListener('click', (e) => {
+                e.stopPropagation();
+                list.style.display = list.style.display === 'none' ? 'block' : 'none';
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) {
+                    list.style.display = 'none';
+                }
+            });
+
+            function updateCuisinesText() {
+                const checked = Array.from(cuisineList.querySelectorAll('input:checked'));
+                if (checked.length === 0) {
+                    selectedText.textContent = 'Any Cuisine';
+                } else if (checked.length === 1) {
+                    selectedText.textContent = checked[0].value;
+                } else {
+                    selectedText.textContent = `${checked.length} Cuisines Selected`;
+                }
             }
         } catch (error) {
             console.error('Error fetching options:', error);
@@ -84,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderCard = (res) => {
         const cuisines = Array.isArray(res.cuisines) ? res.cuisines.join(', ') : (res.cuisines || 'N/A');
         const costValue = res.average_cost_for_two;
-        const cost = costValue ? `₹${costValue.toLocaleString('en-IN')}` : '₹ N/A';
+        const cost = costValue ? `Cost for Two: ₹${costValue.toLocaleString('en-IN')}` : 'Cost for Two: ₹N/A';
         const rating = res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A';
         const location = res.locality ? `${res.locality}, ${res.city}` : (res.city || 'N/A');
         const img = getRestaurantImage(cuisines, res.name);
@@ -97,8 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card-body">
                     <h3 class="card-title">${res.name || 'Restaurant'}</h3>
                     <div class="detail-row price-row" style="margin-bottom: 15px;">
-                        <span class="detail-label">Cost for Two:</span>
-                        <span class="detail-value" style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem;">${cost}</span>
+                        <span class="detail-value" style="font-weight: 700; color: var(--text-dark); font-size: 1.1rem;">${cost}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Location:</span>
@@ -119,9 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const place = document.getElementById('place').value;
-        const cuisineSelect = document.getElementById('cuisines');
-        const selectedCuisines = Array.from(cuisineSelect.selectedOptions)
-            .map(opt => opt.value)
+        const selectedCuisines = Array.from(document.querySelectorAll('#cuisines-list input:checked'))
+            .map(cb => cb.value)
             .filter(val => val !== "");
 
         const priceCategory = document.getElementById('price_category').value;

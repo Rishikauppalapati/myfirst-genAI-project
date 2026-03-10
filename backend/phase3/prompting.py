@@ -38,6 +38,7 @@ def build_user_prompt(prefs: UserPreferences, candidates: List[Dict[str, Any]]) 
             "1. Do NOT include 'Why Recommended', 'Consider If', or bullet points of any kind. "
             "2. Do NOT mention the location/city name in the overview (it's already shown on the card). "
             "3. Focus on the sensory experience: the aroma, the specific signature dishes, and the unique vibe. "
+            "4. If multiple cuisines are requested, any restaurant serving AT LEAST ONE of those cuisines is considered a perfect match (OR logic). "
             "Return ONLY valid JSON with this exact structure for every recommendation:\n"
             "{\n"
             '  "recommendations": [\n'

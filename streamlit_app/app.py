@@ -66,7 +66,7 @@ def main():
 
     with st.sidebar:
         st.header("Your Preferences")
-        place_selection = st.selectbox("Place / City / Locality", options_places)
+        place_selection = st.selectbox("Location", options_places)
         place = None if place_selection == "Any" else place_selection
         
         cuisines = st.multiselect("Cuisines", options_cuisines, placeholder="Select cuisines")
@@ -164,10 +164,10 @@ def main():
                             
                             c1, c2 = st.columns(2)
                             with c1:
-                                display_place = r.get('place', 'N/A')
+                                display_place = r.get('locality') or r.get('city') or r.get('place', 'N/A')
                                 if place and place.lower() not in display_place.lower():
                                     display_place = f"{display_place}, {place}"
-                                st.write(f"**Place:** {display_place}")
+                                st.write(f"**Location:** {display_place}")
                                 
                                 raw_price = None
                                 formatted_price = "N/A"
@@ -183,20 +183,20 @@ def main():
                                 
                                 if raw_price:
                                     if isinstance(raw_price, (int, float)):
-                                        formatted_price = f"~ ₹{int(raw_price)} for 2"
+                                        formatted_price = f"Cost for Two: ₹{int(raw_price):,}"
                                     elif isinstance(raw_price, str):
                                         # Extract digits if it's a string like "800 for two"
                                         digits = ''.join(c for c in raw_price if c.isdigit())
                                         if digits:
-                                            formatted_price = f"~ ₹{digits} for 2"
+                                            formatted_price = f"Cost for Two: ₹{int(digits):,}"
                                         else:
                                             # If there's some text but no digits, it might be literally 'N/A'
-                                            formatted_price = raw_price if "n/a" not in raw_price.lower() else "Price Varies"
+                                            formatted_price = f"Cost for Two: {raw_price}" if "n/a" not in raw_price.lower() else "Cost for Two: ₹N/A"
                                 else:
-                                    formatted_price = "Price Varies"
+                                    formatted_price = "Cost for Two: ₹N/A"
                                             
                                 st.write(f"**Cuisines:** {', '.join(r.get('cuisines', []))}")
-                                st.write(f"**Price Approx:** {formatted_price}")
+                                st.write(f"**{formatted_price}**")
                                 
                             with c2:
                                 st.markdown("#### Overview")
