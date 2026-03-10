@@ -19,5 +19,6 @@
             "src": "/(.*)",
             "dest": "/frontend/$1"
         }
-    ]
+    ],
+    "_build_timestamp": "2026-03-10T11:00:00"
 }

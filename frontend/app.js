@@ -52,22 +52,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Initialize Choices.js after populating options
             if (window.Choices) {
-                // Remove any manual styling that might make it look like a listbox
-                cuisineSelect.style.height = 'auto';
-                cuisineSelect.style.display = 'none';
+                // Destroy existing instance if any (to prevent duplicates)
+                if (window.cuisinesChoices) {
+                    window.cuisinesChoices.destroy();
+                }
 
-                new Choices(cuisineSelect, {
+                window.cuisinesChoices = new Choices(cuisineSelect, {
                     removeItemButton: true,
                     placeholder: true,
                     placeholderValue: 'Select cuisines...',
                     searchEnabled: true,
                     itemSelectText: '',
+                    shouldSort: true
                 });
             }
         } catch (error) {
             console.error('Error fetching options:', error);
-            document.getElementById('place').innerHTML = '<option value="">Error loading places</option>';
-            document.getElementById('cuisines').innerHTML = '<option value="">Error loading cuisines</option>';
+            const placeSelect = document.getElementById('place');
+            const cuisineSelect = document.getElementById('cuisines');
+            if (placeSelect) placeSelect.innerHTML = '<option value="">Error loading places</option>';
+            if (cuisineSelect) cuisineSelect.innerHTML = '<option value="">Error loading cuisines</option>';
         }
     }
 

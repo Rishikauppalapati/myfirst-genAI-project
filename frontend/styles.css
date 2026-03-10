@@ -148,6 +148,26 @@ h1, h2, h3, h4, .logo-text {
     gap: 1.5rem;
 }
 
+/* Hide raw multiselect listbox appearance */
+select[multiple] {
+    height: 38px;
+    overflow-y: hidden;
+}
+
+/* Choices.js customization to ensure it looks like a dropdown */
+.choices__inner {
+    border: none !important;
+    border-bottom: 2px solid var(--border-color) !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    min-height: 44px !important;
+}
+
+.choices__list--multiple .choices__item {
+    background-color: var(--primary-color) !important;
+    border: none !important;
+}
+
 .input-group {
     flex: 1;
     min-width: 150px;
