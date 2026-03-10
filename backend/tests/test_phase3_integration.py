@@ -38,6 +38,6 @@ def test_phase3_generate_llm_recommendations_with_groq():
 
     if recs:
         first = recs[0]
-        for key in ("restaurant_id", "name", "summary", "why_recommended"):
+        for key in ("restaurant_id", "name", "summary"):
             assert key in first
 

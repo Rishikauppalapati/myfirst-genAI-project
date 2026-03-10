@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-body">
                     <h3 class="card-title">${res.name || 'Restaurant'}</h3>
+                    <div class="detail-row price-row" style="margin-bottom: 15px;">
+                        <span class="detail-label">Cost for Two:</span>
+                        <span class="detail-value" style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem;">${cost}</span>
+                    </div>
                     <div class="detail-row">
                         <span class="detail-label">Location:</span>
                         <span class="detail-value">${location}</span>
@@ -103,10 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="detail-row">
                         <span class="detail-label">Cuisines:</span>
                         <span class="detail-value">${cuisines}</span>
-                    </div>
-                    <div class="detail-row" style="margin-bottom: 12px;">
-                        <span class="detail-label">Cost for Two:</span>
-                        <span class="detail-value" style="font-weight: 700; color: var(--primary-color);">${cost}</span>
                     </div>
                     <p class="card-overview">${res.summary || ''}</p>
                 </div>

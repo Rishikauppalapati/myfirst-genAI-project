@@ -200,16 +200,16 @@ def main():
                                 
                             with c2:
                                 st.markdown("#### Overview")
-                                why = r.get("why_recommended", [])
-                                if isinstance(why, list):
-                                    for reason in why:
-                                        st.markdown(f"- {reason}")
-                                else:
-                                    st.write(why)
+                                summary = r.get("summary", "")
+                                if not summary:
+                                    # Fallback if summary is missing but why_recommended exists (legacy support/robustness)
+                                    why = r.get("why_recommended", [])
+                                    if isinstance(why, list):
+                                        summary = " ".join(why)
+                                    else:
+                                        summary = str(why)
                                 
-                            consider_if = r.get("consider_if")
-                            if consider_if:
-                                st.success(f"💡 **Consider if:** {consider_if}")
+                                st.write(summary)
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
