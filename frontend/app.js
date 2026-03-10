@@ -162,27 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ratingValue = rec.rating ? parseFloat(rec.rating).toFixed(1) : 'N/A';
                 const ratingClass = getRatingClass(rec.rating);
 
-                let reasonsHtml = '';
-                if (rec.why_recommended) {
-                    reasonsHtml = `<div class="card-reasons">
-                        <h4>Why Recommended</h4>
-                        <ul>`;
-
-                    if (Array.isArray(rec.why_recommended)) {
-                        rec.why_recommended.forEach(reason => {
-                            reasonsHtml += `<li>${reason}</li>`;
-                        });
-                    } else {
-                        reasonsHtml += `<li>${rec.why_recommended}</li>`;
-                    }
-                    reasonsHtml += `</ul></div>`;
-                }
-
-                let considerIfHtml = '';
-                if (rec.consider_if) {
-                    considerIfHtml = `<div class="consider-if"><strong>Consider If:</strong> ${rec.consider_if}</div>`;
-                }
-
                 const cuisinesList = Array.isArray(rec.cuisines) ? rec.cuisines.join(', ') : (rec.cuisines || 'N/A');
 
                 let summaryHtml = '';
@@ -192,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="detail-value" style="font-size: 0.9rem;">${rec.summary}</span>
                     </div>`;
                 }
+
+                const priceForTwo = rec.average_cost_for_two ? `₹${rec.average_cost_for_two}` : 'Price on request';
 
                 // Curated high-quality food and restaurant images for reliable fallbacks
                 const fallbackImages = [
@@ -235,16 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-body">
                         <div class="detail-row">
-                            <span class="detail-label">City:</span>
-                            <span class="detail-value">${displayPlace}</span>
-                        </div>
-                        <div class="detail-row">
                             <span class="detail-label">Cuisines:</span>
                             <span class="detail-value">${cuisinesList}</span>
                         </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Price for 2:</span>
+                            <span class="detail-value">${priceForTwo}</span>
+                        </div>
                         ${summaryHtml}
-                        ${reasonsHtml}
-                        ${considerIfHtml}
                     </div>
                 `;
 

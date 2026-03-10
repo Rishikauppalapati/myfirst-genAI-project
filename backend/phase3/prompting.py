@@ -31,26 +31,25 @@ def build_user_prompt(prefs: UserPreferences, candidates: List[Dict[str, Any]]) 
         "candidate_restaurants": candidates,
         "instructions": (
             "Select the best restaurants for the user from the candidates. "
-            "You MUST provide at least 5 recommendations if there are enough candidates, "
-            "and you may provide more if they are highly relevant. "
-            "Explain briefly why each one is recommended, "
-            "and provide an overall explanation of how you applied the preferences. "
+            "You MUST provide at least 5 recommendations if there are enough candidates. "
+            "Write a creative, mouth-watering, and attractive overview for each restaurant. "
+            "The overview should highlight what makes the place special without being repetitive. "
+            "Do NOT include why_recommended or separate bullet points. "
             "Return ONLY valid JSON with this exact structure for every recommendation:\n"
             "{\n"
             '  "recommendations": [\n'
             "    {\n"
             '      "restaurant_id": string,\n'
             '      "name": string,\n'
-            '      "place": string (MUST include the exact city name),\n'
-            '      "cuisines": [string, ...] (MUST include the cuisines array),\n'
-            '      "rating": number (MUST include the numeric rating if available),\n'
-            '      "summary": string,\n'
-            '      "why_recommended": [string, ...]\n'
+            '      "cuisines": [string, ...],\n'
+            '      "rating": number,\n'
+            '      "average_cost_for_two": number,\n'
+            '      "summary": string (A creative, attractive description)\n'
             "    }, ...\n"
             "  ],\n"
             '  "explanation": string\n'
             "}\n"
-            "Do not include any extra keys or text outside this JSON. Ensure all fields (place, cuisines, rating) are populated from the candidate data."
+            "Do not include any extra keys or text outside this JSON. Ensure the summary is engaging and captures the vibe of the restaurant."
         ),
     }
     return json.dumps(payload, indent=2)
