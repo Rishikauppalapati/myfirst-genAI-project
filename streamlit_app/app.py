@@ -69,7 +69,7 @@ def main():
         place_selection = st.selectbox("Place / City / Locality", options_places)
         place = None if place_selection == "Any" else place_selection
         
-        cuisines = st.multiselect("Cuisines", options_cuisines, placeholder="Select cuisines", max_selections=2)
+        cuisines = st.multiselect("Cuisines", options_cuisines, placeholder="Select cuisines")
         
         price_options = {
             "Any": "Any",

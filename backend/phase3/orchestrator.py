@@ -7,7 +7,7 @@ from phase2.recommender import recommend
 from phase3.prompting import call_groq_for_recommendations
 
 
-def generate_llm_recommendations(prefs: UserPreferences) -> Dict[str, Any]:
+def generate_llm_recommendations(prefs: UserPreferences, catalog_df: Any = None) -> Dict[str, Any]:
     """
     Phase 3 orchestration:
     - Uses Phase 2 deterministic recommendations as grounded context.
@@ -19,7 +19,7 @@ def generate_llm_recommendations(prefs: UserPreferences) -> Dict[str, Any]:
       "explanation": "..."
     }
     """
-    base_recs = recommend(prefs)
+    base_recs = recommend(prefs, catalog_df=catalog_df)
     if not base_recs:
         return {
             "recommendations": [],
