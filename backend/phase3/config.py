@@ -22,7 +22,8 @@ def _load_env_files() -> None:
     load_dotenv(override=False)
 
     # Also support ./env/.env next to the example file
-    env_path = Path("env") / ".env"
+    base_dir = Path(__file__).resolve().parent.parent
+    env_path = base_dir / "env" / ".env"
     if env_path.exists():
         load_dotenv(env_path, override=False)
 

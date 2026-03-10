@@ -74,14 +74,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Get form values
         const place = document.getElementById('place').value;
-        const cuisine = document.getElementById('cuisines').value;
+
+        // Collect multiple cuisines
+        const cuisineSelect = document.getElementById('cuisines');
+        const selectedCuisines = Array.from(cuisineSelect.selectedOptions)
+            .map(opt => opt.value)
+            .filter(val => val !== "");
+
         const priceCategory = document.getElementById('price_category').value;
         const minRating = parseFloat(document.getElementById('min_rating').value);
 
         // Prepare request body
         const reqBody = {
             place: place,
-            cuisines: cuisine ? [cuisine] : [],
+            cuisines: selectedCuisines,
             price_category: priceCategory,
             min_rating: minRating,
             top_k: 6 // Ask for 6 recommendations to fill a 3-column grid nicely
