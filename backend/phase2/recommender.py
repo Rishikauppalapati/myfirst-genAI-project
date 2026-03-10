@@ -143,19 +143,24 @@ def recommend(
 
     # Attempt 1: Strict locality match
     filtered_strict = _filter_catalog(catalog_df, prefs, strict_place=True)
-    ranked = _rank(filtered_strict, prefs, ranking_weights)
+    ranked_strict = _rank(filtered_strict, prefs, ranking_weights)
 
-    # If the user specified a place and we didn't get enough results, relax the place filter
-    if prefs.place and len(ranked) < prefs.top_k:
+    # If the user specified a place and we didn't get enough results, show ALL matches first
+    # but still prioritize the strictly matching ones at the top.
+    if prefs.place:
         filtered_relaxed = _filter_catalog(catalog_df, prefs, strict_place=False)
         ranked_relaxed = _rank(filtered_relaxed, prefs, ranking_weights)
         
-        # Combine them, keeping the strictly matching ones first
-        already_in_strict = ranked.index
-        ranked_relaxed_remaining = ranked_relaxed.drop(already_in_strict, errors="ignore")
-        
-        # Append the relaxed ones after the strict ones
-        ranked = pd.concat([ranked, ranked_relaxed_remaining])
+        # Combine them: Strict matches first, then any other relevant results
+        if not ranked_strict.empty:
+            already_in_strict = ranked_strict.index
+            ranked_relaxed_remaining = ranked_relaxed.drop(already_in_strict, errors="ignore")
+            # We strictly keep the user's chosen location results at the VERY TOP
+            ranked = pd.concat([ranked_strict, ranked_relaxed_remaining])
+        else:
+            ranked = ranked_relaxed
+    else:
+        ranked = ranked_strict
 
     if ranked.empty:
         return []

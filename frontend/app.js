@@ -216,6 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-body">
                         <div class="detail-row">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">${displayPlace}</span>
+                        </div>
+                        <div class="detail-row">
                             <span class="detail-label">Cuisines:</span>
                             <span class="detail-value">${cuisinesList}</span>
                         </div>

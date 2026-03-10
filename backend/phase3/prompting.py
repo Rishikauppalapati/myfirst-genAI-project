@@ -32,9 +32,11 @@ def build_user_prompt(prefs: UserPreferences, candidates: List[Dict[str, Any]]) 
         "instructions": (
             "Select the best restaurants for the user from the candidates. "
             "You MUST provide at least 5 recommendations if there are enough candidates. "
-            "Write a creative, mouth-watering, and attractive overview for each restaurant. "
-            "The overview should highlight what makes the place special without being repetitive. "
-            "Do NOT include why_recommended or separate bullet points. "
+            "Write a creative, mouth-watering, and attractive 2-3 sentence overview for each restaurant. "
+            "STRICT RULES: "
+            "1. Do NOT include 'Why Recommended' or 'Consider If' sections. "
+            "2. Do NOT mention the location/city name in the overview (it's already shown on the card). "
+            "3. Focus on the vibe, signature dishes, and atmosphere. "
             "Return ONLY valid JSON with this exact structure for every recommendation:\n"
             "{\n"
             '  "recommendations": [\n'
@@ -44,12 +46,12 @@ def build_user_prompt(prefs: UserPreferences, candidates: List[Dict[str, Any]]) 
             '      "cuisines": [string, ...],\n'
             '      "rating": number,\n'
             '      "average_cost_for_two": number,\n'
-            '      "summary": string (A creative, attractive description)\n'
+            '      "summary": string\n'
             "    }, ...\n"
             "  ],\n"
             '  "explanation": string\n'
             "}\n"
-            "Do not include any extra keys or text outside this JSON. Ensure the summary is engaging and captures the vibe of the restaurant."
+            "Do not include any extra keys or text outside this JSON."
         ),
     }
     return json.dumps(payload, indent=2)
