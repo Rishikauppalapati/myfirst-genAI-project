@@ -1,0 +1,14 @@
+{
+    "name": "cravequest-fullstack",
+    "version": "1.0.0",
+    "description": "AI Restaurant Recommender - Fullstack Setup",
+    "scripts": {
+        "start": "npx serve frontend -l 3000",
+        "backend": "uvicorn backend.main:app --reload --port 8000",
+        "dev": "npx concurrently \"npm run backend\" \"npm run start\""
+    },
+    "dependencies": {
+        "serve": "^14.2.1",
+        "concurrently": "^8.2.2"
+    }
+}
