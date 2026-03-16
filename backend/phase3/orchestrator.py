@@ -28,17 +28,24 @@ def generate_llm_recommendations(prefs: UserPreferences, catalog_df: Any = None)
 
     llm_result = call_groq_for_recommendations(prefs, base_recs)
     
-    # Map back is_nearby from base_recs to llm_result for frontend sectioning
-    nearby_map = {r['restaurant_id']: r.get('is_nearby', False) for r in base_recs}
-    
+    base_map = {str(r.get('restaurant_id', '')): r for r in base_recs}
     recs = llm_result.get("recommendations", [])
     for r in recs:
-        rid = r.get("restaurant_id")
-        if rid in nearby_map:
-            r["is_nearby"] = nearby_map[rid]
-        else:
-            # Fallback if ID is missing or mismatched
-            r["is_nearby"] = False
+        rid = str(r.get("restaurant_id", ""))
+        base = base_map.get(rid, {})
+        
+        r["is_nearby"] = base.get("is_nearby", False)
+        
+        # Restore fields the LLM might have omitted or hallucinates as N/A
+        for k in ["address", "locality", "city"]:
+            if k not in r or not r[k] or str(r[k]).lower() == "n/a":
+                r[k] = base.get(k, "")
+                
+        if "average_cost_for_two" not in r or not r["average_cost_for_two"] or str(r["average_cost_for_two"]).lower() == "n/a":
+            r["average_cost_for_two"] = base.get("average_cost_for_two")
+            
+        if "rating" not in r or not r["rating"] or str(r["rating"]).lower() == "n/a":
+            r["rating"] = base.get("rating")
             
     return llm_result
 

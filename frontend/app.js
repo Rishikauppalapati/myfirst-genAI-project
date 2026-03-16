@@ -106,10 +106,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderCard = (res) => {
         const cuisines = Array.isArray(res.cuisines) ? res.cuisines.join(', ') : (res.cuisines || 'N/A');
+        
         const costValue = res.average_cost_for_two;
-        const cost = costValue ? `Cost for Two: ₹${costValue.toLocaleString('en-IN')}` : 'Cost for Two: ₹N/A';
+        const costHtml = costValue && String(costValue).toLowerCase() !== "n/a" && !isNaN(Number(costValue)) && Number(costValue) > 0
+            ? `<div class="detail-row price-row" style="margin-bottom: 15px;">
+                        <span class="detail-value" style="font-weight: 700; color: var(--text-dark); font-size: 1.1rem;">Cost for Two: ₹${Number(costValue).toLocaleString('en-IN')} for two</span>
+                    </div>`
+            : '';
+            
         const rating = res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A';
-        const location = res.locality ? `${res.locality}, ${res.city}` : (res.city || 'N/A');
+        
+        let locParts = [];
+        const addr = String(res.address || "N/A").trim();
+        const loc = String(res.locality || "N/A").trim();
+        const cty = String(res.city || "Bangalore").trim();
+        
+        if (addr && addr.toLowerCase() !== "n/a" && addr.toLowerCase() !== "nan") {
+            locParts.push(addr);
+        } else if (loc && loc.toLowerCase() !== "n/a" && loc.toLowerCase() !== "nan") {
+            locParts.push(loc);
+            if (cty && cty.toLowerCase() !== "n/a" && cty.toLowerCase() !== "nan" && cty.toLowerCase() !== loc.toLowerCase()) {
+                locParts.push(cty);
+            }
+        } else if (cty && cty.toLowerCase() !== "n/a" && cty.toLowerCase() !== "nan") {
+            locParts.push(cty);
+        }
+        
+        let location = locParts.length > 0 ? locParts.join(', ') : 'Unknown Location';
+        location = location.replace(/n\/a,?\s*/ig, '').trim().replace(/,$/, '');
+        
         const img = getRestaurantImage(cuisines, res.name);
 
         return `
@@ -119,9 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-body">
                     <h3 class="card-title">${res.name || 'Restaurant'}</h3>
-                    <div class="detail-row price-row" style="margin-bottom: 15px;">
-                        <span class="detail-value" style="font-weight: 700; color: var(--text-dark); font-size: 1.1rem;">${cost}</span>
-                    </div>
+                    ${costHtml}
                     <div class="detail-row">
                         <span class="detail-label">Location:</span>
                         <span class="detail-value">${location}</span>

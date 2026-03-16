@@ -176,6 +176,7 @@ def recommend(
         "name",
         "city",
         "locality",
+        "address",
         "cuisines",
         "rating",
         "votes",

@@ -57,12 +57,62 @@ def get_price_lookup():
                 lookup[str(name).lower().strip()] = cost
     return lookup
 
+@st.cache_data
+def get_location_lookup():
+    df = load_catalog()
+    lookup = {}
+    if "name" in df.columns:
+        for _, row in df.iterrows():
+            name = str(row["name"]).lower().strip()
+            loc = str(row.get("locality", "")).strip()
+            addr = str(row.get("address", "")).strip()
+            if loc == "nan": loc = ""
+            if addr == "nan": addr = ""
+            lookup[name] = {"locality": loc, "address": addr}
+    return lookup
+
+def format_location_str(place, r, location_lookup, name_key):
+    import re
+    loc_data = location_lookup.get(name_key, {})
+    cat_address = loc_data.get("address", "")
+    cat_locality = loc_data.get("locality", "")
+    
+    address = cat_address if cat_address else r.get('address', '')
+    locality = cat_locality if cat_locality else r.get('locality', '')
+    city = r.get('city', 'Bangalore')
+    
+    # Remove unwanted terms
+    def clean(s):
+        if not s: return ""
+        s = str(s).strip()
+        if s.lower() in ["nan", "n/a", "none", "unknown"]: return ""
+        return s
+
+    address = clean(address)
+    locality = clean(locality)
+    city = clean(city)
+
+    parts = []
+    if address:
+        parts.append(address)
+    if locality and locality.lower() not in address.lower():
+        parts.append(locality)
+    if city and city.lower() not in address.lower() and city.lower() not in locality.lower():
+        parts.append(city)
+        
+    final_loc_str = ", ".join(parts)
+    # Final regex cleanup to ensure no N/A slips through
+    final_loc_str = re.sub(r'(?i)\bn/a\b', '', final_loc_str).strip(' ,')
+    
+    return final_loc_str or "Bangalore" # Default to Bangalore if everything is empty
+
 def main():
     st.title("🍽️ AI Restaurant Recommender")
     st.markdown("Find the best restaurants matching your exact preferences, powered by AI.")
 
     options_places, options_cuisines = get_dropdown_options()
     price_lookup = get_price_lookup()
+    location_lookup = get_location_lookup()
 
     with st.sidebar:
         st.header("Your Preferences")
@@ -157,59 +207,67 @@ def main():
                     ]
                     
                     for i, r in enumerate(recs, 1):
-                        with st.expander(f"{i}. {r.get('name', 'Unknown')} - {r.get('rating', 'N/A')} ⭐"):
-                            name_len = len(r.get('name', '')) if r.get('name') else 0
+                        name = r.get('name', 'Unknown')
+                        rating = r.get('rating', 'N/A')
+                        
+                        with st.expander(f"{i}. 🍽 {name}  - {rating} ⭐"):
+                            name_len = len(name)
                             img_idx = (name_len + i * 7) % len(fallback_images)
-                            st.image(fallback_images[img_idx], use_column_width=True)
+                            st.image(fallback_images[img_idx], use_container_width=True)
                             
-                            c1, c2 = st.columns(2)
-                            with c1:
-                                display_place = r.get('locality') or r.get('city') or r.get('place', 'N/A')
-                                if place and place.lower() not in display_place.lower():
-                                    display_place = f"{display_place}, {place}"
-                                st.write(f"**Location:** {display_place}")
-                                
-                                raw_price = None
-                                formatted_price = "N/A"
-                                
-                                # ALWAYS Prefer the actual catalog dataset price over the LLM hallucination
-                                name_key = r.get('name', '').lower().strip()
-                                if name_key in price_lookup:
-                                    raw_price = price_lookup[name_key]
-                                
-                                # If missing from catalog, gracefully fall back to LLM's guess
-                                if not raw_price or str(raw_price) == 'N/A' or str(raw_price).strip() == '':
-                                    raw_price = r.get('price')
-                                
-                                if raw_price:
-                                    if isinstance(raw_price, (int, float)):
-                                        formatted_price = f"Cost for Two: ₹{int(raw_price):,}"
-                                    elif isinstance(raw_price, str):
-                                        # Extract digits if it's a string like "800 for two"
-                                        digits = ''.join(c for c in raw_price if c.isdigit())
-                                        if digits:
-                                            formatted_price = f"Cost for Two: ₹{int(digits):,}"
-                                        else:
-                                            # If there's some text but no digits, it might be literally 'N/A'
-                                            formatted_price = f"Cost for Two: {raw_price}" if "n/a" not in raw_price.lower() else "Cost for Two: ₹N/A"
+                            name_key = name.lower().strip()
+                            
+                            # 📍 Location
+                            display_loc = format_location_str(place, r, location_lookup, name_key)
+                            st.write(f"📍 **Location:** {display_loc}")
+                            
+                            # 🍜 Cuisines
+                            cuisines_list = r.get('cuisines', [])
+                            if isinstance(cuisines_list, list):
+                                cuisines_str = ", ".join(cuisines_list)
+                            else:
+                                cuisines_str = str(cuisines_list)
+                            st.write(f"🍜 **Cuisines:** {cuisines_str}")
+                            
+                            # 💰 Cost
+                            raw_price = None
+                            if name_key in price_lookup:
+                                raw_price = price_lookup[name_key]
+                            if not raw_price or str(raw_price).lower() in ['n/a', '', 'nan']:
+                                raw_price = r.get('price') or r.get('average_cost_for_two')
+                            
+                            extracted_digits = None
+                            if raw_price:
+                                if isinstance(raw_price, (int, float)):
+                                    if raw_price == raw_price: extracted_digits = int(raw_price)
+                                elif isinstance(raw_price, str):
+                                    digits = ''.join(c for c in raw_price if c.isdigit())
+                                    if digits: extracted_digits = int(digits)
+                            
+                            if extracted_digits:
+                                st.write(f"💰 **Cost:** ₹{extracted_digits}")
+                            
+                            # ⭐ Rating (if available and not already in title)
+                            # Actually user said "Rating (if available)" in the list.
+                            # It's already in the title, but I'll add it here for consistency if needed.
+                            # st.write(f"⭐ **Rating:** {rating}")
+
+                            # 🍽 Highlights (3 bullet points)
+                            st.markdown("#### 🍽 Highlights")
+                            summary = r.get("summary", "")
+                            
+                            # Logic to ensure it looks like bullet points even if LLM returns paragraph
+                            if summary:
+                                if "•" in summary or "*" in summary or "-" in summary:
+                                    # Already has bullets or similar
+                                    st.write(summary)
                                 else:
-                                    formatted_price = "Cost for Two: ₹N/A"
-                                            
-                                st.write(f"**Cuisines:** {', '.join(r.get('cuisines', []))}")
-                                st.write(f"**{formatted_price}**")
-                                
-                            with c2:
-                                st.markdown("#### Overview")
-                                summary = r.get("summary", "")
-                                if not summary:
-                                    # Fallback if summary is missing but why_recommended exists (legacy support/robustness)
-                                    why = r.get("why_recommended", [])
-                                    if isinstance(why, list):
-                                        summary = " ".join(why)
-                                    else:
-                                        summary = str(why)
-                                
-                                st.write(summary)
+                                    # Fallback: try to split by sentences and bulletize if it's a paragraph
+                                    sentences = [s.strip() for s in summary.split('.') if s.strip()]
+                                    for sent in sentences[:3]:
+                                        st.write(f"• {sent}")
+                            else:
+                                st.write("• Famous for: Great food\n• Ambience: Nice atmosphere\n• Why visit: Top rated")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
