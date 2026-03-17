@@ -245,15 +245,15 @@ def main():
                                     if digits: extracted_digits = int(digits)
                             
                             if extracted_digits:
-                                st.write(f"💰 **Cost:** ₹{extracted_digits}")
+                                st.write(f"💰 **Cost for two:** ₹{extracted_digits}")
                             
                             # ⭐ Rating (if available and not already in title)
                             # Actually user said "Rating (if available)" in the list.
                             # It's already in the title, but I'll add it here for consistency if needed.
                             # st.write(f"⭐ **Rating:** {rating}")
 
-                            # 🍽 Highlights (3 bullet points)
-                            st.markdown("#### 🍽 Highlights")
+                            # ✨ Highlights (3 bullet points)
+                            st.markdown("#### ✨")
                             summary = r.get("summary", "")
                             
                             # Logic to ensure it looks like bullet points even if LLM returns paragraph
