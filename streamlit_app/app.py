@@ -265,16 +265,109 @@ def main():
                             # ✨ Highlights
                             st.markdown("#### ✨ Highlights")
                             
-                            # Format highlights with emojis - crisp and catchy
+                            # Generate dynamic highlights based on restaurant data
                             cuisines_list = r.get('cuisines', [])
                             if isinstance(cuisines_list, list) and cuisines_list:
-                                cuisine_str = cuisines_list[0] if cuisines_list else "Delicious"
+                                primary_cuisine = cuisines_list[0]
+                                secondary_cuisine = cuisines_list[1] if len(cuisines_list) > 1 else None
                             else:
-                                cuisine_str = str(cuisines_list) if cuisines_list else "Delicious"
+                                primary_cuisine = str(cuisines_list) if cuisines_list else "Multi-cuisine"
+                                secondary_cuisine = None
                             
-                            st.write(f"🔥 **Famous for:** Authentic {cuisine_str} cuisine")
-                            st.write(f"🎭 **Ambience:** Family friendly and casual")
-                            st.write(f"💡 **Why visit:** To experience the rich flavors")
+                            # Dynamic "Famous for" based on cuisine type
+                            cuisine_dishes = {
+                                "North Indian": "Butter Chicken, Naan & Rich Curries",
+                                "South Indian": "Crispy Dosas, Idlis & Filter Coffee",
+                                "Chinese": "Hakka Noodles, Manchurian & Dim Sums",
+                                "Italian": "Wood-fired Pizza, Pasta & Tiramisu",
+                                "Continental": "Grilled Steaks, Burgers & Creamy Soups",
+                                "Mexican": "Tacos, Burritos & Quesadillas",
+                                "Thai": "Pad Thai, Green Curry & Tom Yum Soup",
+                                "Japanese": "Sushi, Ramen & Tempura",
+                                "Mughlai": "Biryani, Kebabs & Shahi Tukda",
+                                "Street Food": "Chaat, Pav Bhaji & Local Delights",
+                                "Fast Food": "Burgers, Fries & Milkshakes",
+                                "Bakery": "Fresh Croissants, Cakes & Artisan Breads",
+                                "Cafe": "Specialty Coffee, Sandwiches & Desserts",
+                                "Beverages": "Refreshing Mocktails, Smoothies & Shakes",
+                                "Desserts": "Gulab Jamun, Ice Cream & Pastries",
+                                "Seafood": "Fresh Fish, Prawns & Crab Delicacies",
+                                "Biryani": "Aromatic Biryani, Kebabs & Raita",
+                                "Pizza": "Gourmet Pizzas with Fresh Toppings",
+                                "Burger": "Juicy Burgers with Secret Sauces",
+                                "Rolls": "Kathi Rolls, Shawarma & Wraps",
+                                "Sandwich": "Loaded Sandwiches & Subs",
+                                "Salad": "Fresh Organic Salads & Healthy Bowls",
+                                "Kebab": "Tandoori Kebabs & Grilled Specialties",
+                                "Mithai": "Traditional Sweets & Festive Treats"
+                            }
+                            
+                            # Find matching dish description
+                            famous_dish = None
+                            for cuisine_key, dish_desc in cuisine_dishes.items():
+                                if cuisine_key.lower() in primary_cuisine.lower():
+                                    famous_dish = dish_desc
+                                    break
+                            
+                            if not famous_dish:
+                                if secondary_cuisine:
+                                    for cuisine_key, dish_desc in cuisine_dishes.items():
+                                        if cuisine_key.lower() in secondary_cuisine.lower():
+                                            famous_dish = dish_desc
+                                            break
+                            
+                            if not famous_dish:
+                                famous_dish = f"Signature {primary_cuisine} Specialties"
+                            
+                            # Dynamic "Ambience" based on rating, price and location
+                            rating_val = r.get('rating', 0) or 0
+                            votes_val = r.get('votes', 0) or 0
+                            locality_val = r.get('locality', '') or ''
+                            
+                            if rating_val >= 4.5 and votes_val > 1000:
+                                ambience = "Premium dining with elegant decor & top-rated service"
+                            elif rating_val >= 4.0:
+                                ambience = "Cozy atmosphere with warm hospitality"
+                            elif extracted_digits > 1000:
+                                ambience = "Upscale setting perfect for special occasions"
+                            elif extracted_digits < 500:
+                                ambience = "Casual, budget-friendly spot for quick bites"
+                            elif "mall" in locality_val.lower() or "center" in locality_val.lower():
+                                ambience = "Trendy spot in a bustling location"
+                            else:
+                                ambience = "Relaxed vibe ideal for family & friends"
+                            
+                            # Dynamic "Why visit" based on unique factors
+                            why_visit_options = []
+                            
+                            if rating_val >= 4.5:
+                                why_visit_options.append("Exceptional ratings & rave reviews")
+                            elif rating_val >= 4.0:
+                                why_visit_options.append("Highly rated by food lovers")
+                            
+                            if votes_val > 2000:
+                                why_visit_options.append("A local favorite with thousands of fans")
+                            elif votes_val > 500:
+                                why_visit_options.append("Popular choice among locals")
+                            
+                            if extracted_digits < 500:
+                                why_visit_options.append("Amazing value for money")
+                            elif extracted_digits > 1500:
+                                why_visit_options.append("A luxurious culinary experience")
+                            
+                            if secondary_cuisine:
+                                why_visit_options.append(f"Unique blend of {primary_cuisine} & {secondary_cuisine}")
+                            else:
+                                why_visit_options.append(f"Authentic {primary_cuisine} flavors")
+                            
+                            if not why_visit_options:
+                                why_visit_options.append("Delicious food that keeps you coming back")
+                            
+                            why_visit = why_visit_options[0] if why_visit_options else "Great food & memorable experience"
+                            
+                            st.write(f"🔥 **Famous for:** {famous_dish}")
+                            st.write(f"🎭 **Ambience:** {ambience}")
+                            st.write(f"💡 **Why visit:** {why_visit}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
