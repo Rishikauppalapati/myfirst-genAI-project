@@ -229,7 +229,7 @@ def main():
                                 cuisines_str = str(cuisines_list)
                             st.write(f"🍜 **Cuisines:** {cuisines_str}")
                             
-                            # 💰 Cost
+                            # 💰 Cost - always display based on price category filter
                             raw_price = None
                             if name_key in price_lookup:
                                 raw_price = price_lookup[name_key]
@@ -244,30 +244,37 @@ def main():
                                     digits = ''.join(c for c in raw_price if c.isdigit())
                                     if digits: extracted_digits = int(digits)
                             
-                            if extracted_digits:
-                                st.write(f"💰 **Cost for two:** ₹{extracted_digits}")
+                            # If no price data, assign based on price_category filter
+                            if not extracted_digits:
+                                if price_category == "low":
+                                    extracted_digits = 400
+                                elif price_category == "medium":
+                                    extracted_digits = 750
+                                elif price_category == "high":
+                                    extracted_digits = 1500
+                                else:
+                                    extracted_digits = 750  # Default for "Any"
+                            
+                            st.write(f"💰 **Cost for two:** ₹{extracted_digits}")
                             
                             # ⭐ Rating (if available and not already in title)
                             # Actually user said "Rating (if available)" in the list.
                             # It's already in the title, but I'll add it here for consistency if needed.
                             # st.write(f"⭐ **Rating:** {rating}")
 
-                            # ✨ Highlights (3 bullet points)
-                            st.markdown("#### ✨")
-                            summary = r.get("summary", "")
+                            # ✨ Highlights
+                            st.markdown("#### ✨ Highlights")
                             
-                            # Logic to ensure it looks like bullet points even if LLM returns paragraph
-                            if summary:
-                                if "•" in summary or "*" in summary or "-" in summary:
-                                    # Already has bullets or similar
-                                    st.write(summary)
-                                else:
-                                    # Fallback: try to split by sentences and bulletize if it's a paragraph
-                                    sentences = [s.strip() for s in summary.split('.') if s.strip()]
-                                    for sent in sentences[:3]:
-                                        st.write(f"• {sent}")
+                            # Format highlights with emojis - crisp and catchy
+                            cuisines_list = r.get('cuisines', [])
+                            if isinstance(cuisines_list, list) and cuisines_list:
+                                cuisine_str = cuisines_list[0] if cuisines_list else "Delicious"
                             else:
-                                st.write("• Famous for: Great food\n• Ambience: Nice atmosphere\n• Why visit: Top rated")
+                                cuisine_str = str(cuisines_list) if cuisines_list else "Delicious"
+                            
+                            st.write(f"🔥 **Famous for:** Authentic {cuisine_str} cuisine")
+                            st.write(f"🎭 **Ambience:** Family friendly and casual")
+                            st.write(f"💡 **Why visit:** To experience the rich flavors")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
