@@ -323,47 +323,127 @@ def main():
                             rating_val = r.get('rating', 0) or 0
                             votes_val = r.get('votes', 0) or 0
                             locality_val = r.get('locality', '') or ''
+                            name_val = r.get('name', '') or ''
+                            
+                            # Multiple ambience options for variety
+                            import random
+                            random.seed(hash(name_val) % 1000)  # Consistent randomness per restaurant
+                            
+                            ambience_options_premium = [
+                                "Elegant interiors with sophisticated charm",
+                                "Refined setting with impeccable attention to detail",
+                                "Luxurious ambiance perfect for celebrations",
+                                "Stylish decor with a welcoming vibe",
+                                "Upscale atmosphere with premium service"
+                            ]
+                            
+                            ambience_options_cozy = [
+                                "Warm lighting and comfortable seating",
+                                "Intimate setting with friendly staff",
+                                "Charming space that feels like home",
+                                "Relaxed vibe with thoughtful touches",
+                                "Welcoming atmosphere with rustic charm"
+                            ]
+                            
+                            ambience_options_casual = [
+                                "Laid-back spot perfect for hangouts",
+                                "Bright and cheerful everyday dining",
+                                "No-frills space focused on great food",
+                                "Casual setting with quick service",
+                                "Easygoing vibe for relaxed meals"
+                            ]
+                            
+                            ambience_options_trendy = [
+                                "Instagram-worthy modern interiors",
+                                "Hip and happening with urban energy",
+                                "Contemporary design with vibrant atmosphere",
+                                "Buzzing spot with youthful spirit",
+                                "Trendy locale with cool aesthetics"
+                            ]
                             
                             if rating_val >= 4.5 and votes_val > 1000:
-                                ambience = "Premium dining with elegant decor & top-rated service"
+                                ambience = random.choice(ambience_options_premium)
                             elif rating_val >= 4.0:
-                                ambience = "Cozy atmosphere with warm hospitality"
+                                ambience = random.choice(ambience_options_cozy)
                             elif extracted_digits > 1000:
-                                ambience = "Upscale setting perfect for special occasions"
+                                ambience = random.choice(ambience_options_premium)
                             elif extracted_digits < 500:
-                                ambience = "Casual, budget-friendly spot for quick bites"
+                                ambience = random.choice(ambience_options_casual)
                             elif "mall" in locality_val.lower() or "center" in locality_val.lower():
-                                ambience = "Trendy spot in a bustling location"
+                                ambience = random.choice(ambience_options_trendy)
                             else:
-                                ambience = "Relaxed vibe ideal for family & friends"
+                                ambience = random.choice(ambience_options_cozy)
                             
-                            # Dynamic "Why visit" based on unique factors
-                            why_visit_options = []
+                            # Dynamic "Why visit" with multiple options per category
+                            why_visit_pool = []
                             
+                            # Rating-based options
                             if rating_val >= 4.5:
-                                why_visit_options.append("Exceptional ratings & rave reviews")
+                                why_visit_pool.extend([
+                                    "Consistently rated among the best",
+                                    "Award-winning flavors that impress",
+                                    "Top-tier dining experience awaits",
+                                    "Chef's special creations are a must-try"
+                                ])
                             elif rating_val >= 4.0:
-                                why_visit_options.append("Highly rated by food lovers")
+                                why_visit_pool.extend([
+                                    "Foodies keep coming back for more",
+                                    "Quality that exceeds expectations",
+                                    "Trusted by locals for great taste",
+                                    "Perfect spot for memorable meals"
+                                ])
                             
+                            # Popularity-based options
                             if votes_val > 2000:
-                                why_visit_options.append("A local favorite with thousands of fans")
+                                why_visit_pool.extend([
+                                    "Beloved by thousands of diners",
+                                    "Community favorite for years",
+                                    "Word-of-mouth success story"
+                                ])
                             elif votes_val > 500:
-                                why_visit_options.append("Popular choice among locals")
+                                why_visit_pool.extend([
+                                    "Growing fanbase loves this place",
+                                    "Rising star in the food scene",
+                                    "Hidden gem gaining popularity"
+                                ])
                             
+                            # Price-based options
                             if extracted_digits < 500:
-                                why_visit_options.append("Amazing value for money")
+                                why_visit_pool.extend([
+                                    "Big flavors without breaking the bank",
+                                    "Best bang for your buck",
+                                    "Affordable indulgence done right"
+                                ])
                             elif extracted_digits > 1500:
-                                why_visit_options.append("A luxurious culinary experience")
+                                why_visit_pool.extend([
+                                    "Worth the splurge for special moments",
+                                    "Premium experience from start to finish",
+                                    "Fine dining at its finest"
+                                ])
                             
+                            # Cuisine-based options
                             if secondary_cuisine:
-                                why_visit_options.append(f"Unique blend of {primary_cuisine} & {secondary_cuisine}")
+                                why_visit_pool.extend([
+                                    f"Best of both {primary_cuisine} & {secondary_cuisine} worlds",
+                                    f"Creative fusion that surprises",
+                                    f"Unique pairing you won't find elsewhere"
+                                ])
                             else:
-                                why_visit_options.append(f"Authentic {primary_cuisine} flavors")
+                                why_visit_pool.extend([
+                                    f"Masters of {primary_cuisine} cuisine",
+                                    f"Traditional recipes done right",
+                                    f"Authentic taste in every bite"
+                                ])
                             
-                            if not why_visit_options:
-                                why_visit_options.append("Delicious food that keeps you coming back")
+                            # Default options if pool is empty
+                            if not why_visit_pool:
+                                why_visit_pool = [
+                                    "Satisfying flavors you'll remember",
+                                    "Great food, great mood guaranteed",
+                                    "A meal worth savoring"
+                                ]
                             
-                            why_visit = why_visit_options[0] if why_visit_options else "Great food & memorable experience"
+                            why_visit = random.choice(why_visit_pool)
                             
                             st.write(f"🔥 **Famous for:** {famous_dish}")
                             st.write(f"🎭 **Ambience:** {ambience}")
