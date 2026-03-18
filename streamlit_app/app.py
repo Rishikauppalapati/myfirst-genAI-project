@@ -263,265 +263,265 @@ def main():
 
                     if not recs:
                         st.warning("No restaurants found matching your criteria. Try adjusting your filters.")
-                else:
-                    st.success("Here are your recommendations!")
-                    # The user requested to remove the visible insight text but keep it clean
-                    
-                    fallback_images = [
-                        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80',
-                        'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&q=80',
-                        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80',
-                        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80',
-                        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80',
-                        'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80',
-                        'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80',
-                        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80',
-                        'https://images.unsplash.com/photo-1502301103665-0b95cc738daf?w=400&q=80',
-                        'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400&q=80'
-                    ]
-                    
-                    for i, r in enumerate(recs, 1):
-                        name = r.get('name', 'Unknown')
-                        rating = r.get('rating', 'N/A')
+                    else:
+                        st.success("Here are your recommendations!")
+                        # The user requested to remove the visible insight text but keep it clean
                         
-                        with st.expander(f"{i}. 🍽 {name}  - {rating} ⭐"):
-                            name_len = len(name)
-                            img_idx = (name_len + i * 7) % len(fallback_images)
-                            st.image(fallback_images[img_idx], use_container_width=True)
+                        fallback_images = [
+                            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80',
+                            'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&q=80',
+                            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80',
+                            'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80',
+                            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80',
+                            'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80',
+                            'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80',
+                            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80',
+                            'https://images.unsplash.com/photo-1502301103665-0b95cc738daf?w=400&q=80',
+                            'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400&q=80'
+                        ]
+                        
+                        for i, r in enumerate(recs, 1):
+                            name = r.get('name', 'Unknown')
+                            rating = r.get('rating', 'N/A')
                             
-                            name_key = name.lower().strip()
-                            
-                            # 📍 Location
-                            display_loc = format_location_str(place, r, location_lookup, name_key)
-                            st.write(f"📍 **Location:** {display_loc}")
-                            
-                            # 🍜 Cuisines
-                            cuisines_list = r.get('cuisines', [])
-                            if isinstance(cuisines_list, list):
-                                cuisines_str = ", ".join(cuisines_list)
-                            else:
-                                cuisines_str = str(cuisines_list)
-                            st.write(f"🍜 **Cuisines:** {cuisines_str}")
-                            
-                            # 💰 Cost - always display based on price category filter
-                            raw_price = None
-                            if name_key in price_lookup:
-                                raw_price = price_lookup[name_key]
-                            if not raw_price or str(raw_price).lower() in ['n/a', '', 'nan']:
-                                raw_price = r.get('price') or r.get('average_cost_for_two')
-                            
-                            extracted_digits = None
-                            if raw_price:
-                                if isinstance(raw_price, (int, float)):
-                                    if raw_price == raw_price: extracted_digits = int(raw_price)
-                                elif isinstance(raw_price, str):
-                                    digits = ''.join(c for c in raw_price if c.isdigit())
-                                    if digits: extracted_digits = int(digits)
-                            
-                            # If no price data, assign based on price_category filter
-                            if not extracted_digits:
-                                if price_category == "low":
-                                    extracted_digits = 400
-                                elif price_category == "medium":
-                                    extracted_digits = 750
-                                elif price_category == "high":
-                                    extracted_digits = 1500
+                            with st.expander(f"{i}. 🍽 {name}  - {rating} ⭐"):
+                                name_len = len(name)
+                                img_idx = (name_len + i * 7) % len(fallback_images)
+                                st.image(fallback_images[img_idx], use_container_width=True)
+                                
+                                name_key = name.lower().strip()
+                                
+                                # 📍 Location
+                                display_loc = format_location_str(place, r, location_lookup, name_key)
+                                st.write(f"📍 **Location:** {display_loc}")
+                                
+                                # 🍜 Cuisines
+                                cuisines_list = r.get('cuisines', [])
+                                if isinstance(cuisines_list, list):
+                                    cuisines_str = ", ".join(cuisines_list)
                                 else:
-                                    extracted_digits = 750  # Default for "Any"
-                            
-                            st.write(f"💰 **Cost for two:** ₹{extracted_digits}")
-                            
-                            # ⭐ Rating (if available and not already in title)
-                            # Actually user said "Rating (if available)" in the list.
-                            # It's already in the title, but I'll add it here for consistency if needed.
-                            # st.write(f"⭐ **Rating:** {rating}")
+                                    cuisines_str = str(cuisines_list)
+                                st.write(f"🍜 **Cuisines:** {cuisines_str}")
+                                
+                                # 💰 Cost - always display based on price category filter
+                                raw_price = None
+                                if name_key in price_lookup:
+                                    raw_price = price_lookup[name_key]
+                                if not raw_price or str(raw_price).lower() in ['n/a', '', 'nan']:
+                                    raw_price = r.get('price') or r.get('average_cost_for_two')
+                                
+                                extracted_digits = None
+                                if raw_price:
+                                    if isinstance(raw_price, (int, float)):
+                                        if raw_price == raw_price: extracted_digits = int(raw_price)
+                                    elif isinstance(raw_price, str):
+                                        digits = ''.join(c for c in raw_price if c.isdigit())
+                                        if digits: extracted_digits = int(digits)
+                                
+                                # If no price data, assign based on price_category filter
+                                if not extracted_digits:
+                                    if price_category == "low":
+                                        extracted_digits = 400
+                                    elif price_category == "medium":
+                                        extracted_digits = 750
+                                    elif price_category == "high":
+                                        extracted_digits = 1500
+                                    else:
+                                        extracted_digits = 750  # Default for "Any"
+                                
+                                st.write(f"💰 **Cost for two:** ₹{extracted_digits}")
+                                
+                                # ⭐ Rating (if available and not already in title)
+                                # Actually user said "Rating (if available)" in the list.
+                                # It's already in the title, but I'll add it here for consistency if needed.
+                                # st.write(f"⭐ **Rating:** {rating}")
 
-                            # ✨ Highlights
-                            st.markdown("#### ✨ Highlights")
-                            
-                            # Generate dynamic highlights based on restaurant data
-                            cuisines_list = r.get('cuisines', [])
-                            if isinstance(cuisines_list, list) and cuisines_list:
-                                primary_cuisine = cuisines_list[0]
-                                secondary_cuisine = cuisines_list[1] if len(cuisines_list) > 1 else None
-                            else:
-                                primary_cuisine = str(cuisines_list) if cuisines_list else "Multi-cuisine"
-                                secondary_cuisine = None
-                            
-                            # Dynamic "Famous for" based on cuisine type
-                            cuisine_dishes = {
-                                "North Indian": "Butter Chicken, Naan & Rich Curries",
-                                "South Indian": "Crispy Dosas, Idlis & Filter Coffee",
-                                "Chinese": "Hakka Noodles, Manchurian & Dim Sums",
-                                "Italian": "Wood-fired Pizza, Pasta & Tiramisu",
-                                "Continental": "Grilled Steaks, Burgers & Creamy Soups",
-                                "Mexican": "Tacos, Burritos & Quesadillas",
-                                "Thai": "Pad Thai, Green Curry & Tom Yum Soup",
-                                "Japanese": "Sushi, Ramen & Tempura",
-                                "Mughlai": "Biryani, Kebabs & Shahi Tukda",
-                                "Street Food": "Chaat, Pav Bhaji & Local Delights",
-                                "Fast Food": "Burgers, Fries & Milkshakes",
-                                "Bakery": "Fresh Croissants, Cakes & Artisan Breads",
-                                "Cafe": "Specialty Coffee, Sandwiches & Desserts",
-                                "Beverages": "Refreshing Mocktails, Smoothies & Shakes",
-                                "Desserts": "Gulab Jamun, Ice Cream & Pastries",
-                                "Seafood": "Fresh Fish, Prawns & Crab Delicacies",
-                                "Biryani": "Aromatic Biryani, Kebabs & Raita",
-                                "Pizza": "Gourmet Pizzas with Fresh Toppings",
-                                "Burger": "Juicy Burgers with Secret Sauces",
-                                "Rolls": "Kathi Rolls, Shawarma & Wraps",
-                                "Sandwich": "Loaded Sandwiches & Subs",
-                                "Salad": "Fresh Organic Salads & Healthy Bowls",
-                                "Kebab": "Tandoori Kebabs & Grilled Specialties",
-                                "Mithai": "Traditional Sweets & Festive Treats"
-                            }
-                            
-                            # Find matching dish description
-                            famous_dish = None
-                            for cuisine_key, dish_desc in cuisine_dishes.items():
-                                if cuisine_key.lower() in primary_cuisine.lower():
-                                    famous_dish = dish_desc
-                                    break
-                            
-                            if not famous_dish:
-                                if secondary_cuisine:
-                                    for cuisine_key, dish_desc in cuisine_dishes.items():
-                                        if cuisine_key.lower() in secondary_cuisine.lower():
-                                            famous_dish = dish_desc
-                                            break
-                            
-                            if not famous_dish:
-                                famous_dish = f"Signature {primary_cuisine} Specialties"
-                            
-                            # Dynamic "Ambience" based on rating, price and location
-                            rating_val = r.get('rating', 0) or 0
-                            votes_val = r.get('votes', 0) or 0
-                            locality_val = r.get('locality', '') or ''
-                            name_val = r.get('name', '') or ''
-                            
-                            # Multiple ambience options for variety
-                            import random
-                            random.seed(hash(name_val) % 1000)  # Consistent randomness per restaurant
-                            
-                            ambience_options_premium = [
-                                "Elegant interiors with sophisticated charm",
-                                "Refined setting with impeccable attention to detail",
-                                "Luxurious ambiance perfect for celebrations",
-                                "Stylish decor with a welcoming vibe",
-                                "Upscale atmosphere with premium service"
-                            ]
-                            
-                            ambience_options_cozy = [
-                                "Warm lighting and comfortable seating",
-                                "Intimate setting with friendly staff",
-                                "Charming space that feels like home",
-                                "Relaxed vibe with thoughtful touches",
-                                "Welcoming atmosphere with rustic charm"
-                            ]
-                            
-                            ambience_options_casual = [
-                                "Laid-back spot perfect for hangouts",
-                                "Bright and cheerful everyday dining",
-                                "No-frills space focused on great food",
-                                "Casual setting with quick service",
-                                "Easygoing vibe for relaxed meals"
-                            ]
-                            
-                            ambience_options_trendy = [
-                                "Instagram-worthy modern interiors",
-                                "Hip and happening with urban energy",
-                                "Contemporary design with vibrant atmosphere",
-                                "Buzzing spot with youthful spirit",
-                                "Trendy locale with cool aesthetics"
-                            ]
-                            
-                            if rating_val >= 4.5 and votes_val > 1000:
-                                ambience = random.choice(ambience_options_premium)
-                            elif rating_val >= 4.0:
-                                ambience = random.choice(ambience_options_cozy)
-                            elif extracted_digits > 1000:
-                                ambience = random.choice(ambience_options_premium)
-                            elif extracted_digits < 500:
-                                ambience = random.choice(ambience_options_casual)
-                            elif "mall" in locality_val.lower() or "center" in locality_val.lower():
-                                ambience = random.choice(ambience_options_trendy)
-                            else:
-                                ambience = random.choice(ambience_options_cozy)
-                            
-                            # Dynamic "Why visit" with multiple options per category
-                            why_visit_pool = []
-                            
-                            # Rating-based options
-                            if rating_val >= 4.5:
-                                why_visit_pool.extend([
-                                    "Consistently rated among the best",
-                                    "Award-winning flavors that impress",
-                                    "Top-tier dining experience awaits",
-                                    "Chef's special creations are a must-try"
-                                ])
-                            elif rating_val >= 4.0:
-                                why_visit_pool.extend([
-                                    "Foodies keep coming back for more",
-                                    "Quality that exceeds expectations",
-                                    "Trusted by locals for great taste",
-                                    "Perfect spot for memorable meals"
-                                ])
-                            
-                            # Popularity-based options
-                            if votes_val > 2000:
-                                why_visit_pool.extend([
-                                    "Beloved by thousands of diners",
-                                    "Community favorite for years",
-                                    "Word-of-mouth success story"
-                                ])
-                            elif votes_val > 500:
-                                why_visit_pool.extend([
-                                    "Growing fanbase loves this place",
-                                    "Rising star in the food scene",
-                                    "Hidden gem gaining popularity"
-                                ])
-                            
-                            # Price-based options
-                            if extracted_digits < 500:
-                                why_visit_pool.extend([
-                                    "Big flavors without breaking the bank",
-                                    "Best bang for your buck",
-                                    "Affordable indulgence done right"
-                                ])
-                            elif extracted_digits > 1500:
-                                why_visit_pool.extend([
-                                    "Worth the splurge for special moments",
-                                    "Premium experience from start to finish",
-                                    "Fine dining at its finest"
-                                ])
-                            
-                            # Cuisine-based options
-                            if secondary_cuisine:
-                                why_visit_pool.extend([
-                                    f"Best of both {primary_cuisine} & {secondary_cuisine} worlds",
-                                    f"Creative fusion that surprises",
-                                    f"Unique pairing you won't find elsewhere"
-                                ])
-                            else:
-                                why_visit_pool.extend([
-                                    f"Masters of {primary_cuisine} cuisine",
-                                    f"Traditional recipes done right",
-                                    f"Authentic taste in every bite"
-                                ])
-                            
-                            # Default options if pool is empty
-                            if not why_visit_pool:
-                                why_visit_pool = [
-                                    "Satisfying flavors you'll remember",
-                                    "Great food, great mood guaranteed",
-                                    "A meal worth savoring"
+                                # ✨ Highlights
+                                st.markdown("#### ✨ Highlights")
+                                
+                                # Generate dynamic highlights based on restaurant data
+                                cuisines_list = r.get('cuisines', [])
+                                if isinstance(cuisines_list, list) and cuisines_list:
+                                    primary_cuisine = cuisines_list[0]
+                                    secondary_cuisine = cuisines_list[1] if len(cuisines_list) > 1 else None
+                                else:
+                                    primary_cuisine = str(cuisines_list) if cuisines_list else "Multi-cuisine"
+                                    secondary_cuisine = None
+                                
+                                # Dynamic "Famous for" based on cuisine type
+                                cuisine_dishes = {
+                                    "North Indian": "Butter Chicken, Naan & Rich Curries",
+                                    "South Indian": "Crispy Dosas, Idlis & Filter Coffee",
+                                    "Chinese": "Hakka Noodles, Manchurian & Dim Sums",
+                                    "Italian": "Wood-fired Pizza, Pasta & Tiramisu",
+                                    "Continental": "Grilled Steaks, Burgers & Creamy Soups",
+                                    "Mexican": "Tacos, Burritos & Quesadillas",
+                                    "Thai": "Pad Thai, Green Curry & Tom Yum Soup",
+                                    "Japanese": "Sushi, Ramen & Tempura",
+                                    "Mughlai": "Biryani, Kebabs & Shahi Tukda",
+                                    "Street Food": "Chaat, Pav Bhaji & Local Delights",
+                                    "Fast Food": "Burgers, Fries & Milkshakes",
+                                    "Bakery": "Fresh Croissants, Cakes & Artisan Breads",
+                                    "Cafe": "Specialty Coffee, Sandwiches & Desserts",
+                                    "Beverages": "Refreshing Mocktails, Smoothies & Shakes",
+                                    "Desserts": "Gulab Jamun, Ice Cream & Pastries",
+                                    "Seafood": "Fresh Fish, Prawns & Crab Delicacies",
+                                    "Biryani": "Aromatic Biryani, Kebabs & Raita",
+                                    "Pizza": "Gourmet Pizzas with Fresh Toppings",
+                                    "Burger": "Juicy Burgers with Secret Sauces",
+                                    "Rolls": "Kathi Rolls, Shawarma & Wraps",
+                                    "Sandwich": "Loaded Sandwiches & Subs",
+                                    "Salad": "Fresh Organic Salads & Healthy Bowls",
+                                    "Kebab": "Tandoori Kebabs & Grilled Specialties",
+                                    "Mithai": "Traditional Sweets & Festive Treats"
+                                }
+                                
+                                # Find matching dish description
+                                famous_dish = None
+                                for cuisine_key, dish_desc in cuisine_dishes.items():
+                                    if cuisine_key.lower() in primary_cuisine.lower():
+                                        famous_dish = dish_desc
+                                        break
+                                
+                                if not famous_dish:
+                                    if secondary_cuisine:
+                                        for cuisine_key, dish_desc in cuisine_dishes.items():
+                                            if cuisine_key.lower() in secondary_cuisine.lower():
+                                                famous_dish = dish_desc
+                                                break
+                                
+                                if not famous_dish:
+                                    famous_dish = f"Signature {primary_cuisine} Specialties"
+                                
+                                # Dynamic "Ambience" based on rating, price and location
+                                rating_val = r.get('rating', 0) or 0
+                                votes_val = r.get('votes', 0) or 0
+                                locality_val = r.get('locality', '') or ''
+                                name_val = r.get('name', '') or ''
+                                
+                                # Multiple ambience options for variety
+                                import random
+                                random.seed(hash(name_val) % 1000)  # Consistent randomness per restaurant
+                                
+                                ambience_options_premium = [
+                                    "Elegant interiors with sophisticated charm",
+                                    "Refined setting with impeccable attention to detail",
+                                    "Luxurious ambiance perfect for celebrations",
+                                    "Stylish decor with a welcoming vibe",
+                                    "Upscale atmosphere with premium service"
                                 ]
-                            
-                            why_visit = random.choice(why_visit_pool)
-                            
-                            st.write(f"🔥 **Famous for:** {famous_dish}")
-                            st.write(f"🎭 **Ambience:** {ambience}")
-                            st.write(f"💡 **Why visit:** {why_visit}")
+                                
+                                ambience_options_cozy = [
+                                    "Warm lighting and comfortable seating",
+                                    "Intimate setting with friendly staff",
+                                    "Charming space that feels like home",
+                                    "Relaxed vibe with thoughtful touches",
+                                    "Welcoming atmosphere with rustic charm"
+                                ]
+                                
+                                ambience_options_casual = [
+                                    "Laid-back spot perfect for hangouts",
+                                    "Bright and cheerful everyday dining",
+                                    "No-frills space focused on great food",
+                                    "Casual setting with quick service",
+                                    "Easygoing vibe for relaxed meals"
+                                ]
+                                
+                                ambience_options_trendy = [
+                                    "Instagram-worthy modern interiors",
+                                    "Hip and happening with urban energy",
+                                    "Contemporary design with vibrant atmosphere",
+                                    "Buzzing spot with youthful spirit",
+                                    "Trendy locale with cool aesthetics"
+                                ]
+                                
+                                if rating_val >= 4.5 and votes_val > 1000:
+                                    ambience = random.choice(ambience_options_premium)
+                                elif rating_val >= 4.0:
+                                    ambience = random.choice(ambience_options_cozy)
+                                elif extracted_digits > 1000:
+                                    ambience = random.choice(ambience_options_premium)
+                                elif extracted_digits < 500:
+                                    ambience = random.choice(ambience_options_casual)
+                                elif "mall" in locality_val.lower() or "center" in locality_val.lower():
+                                    ambience = random.choice(ambience_options_trendy)
+                                else:
+                                    ambience = random.choice(ambience_options_cozy)
+                                
+                                # Dynamic "Why visit" with multiple options per category
+                                why_visit_pool = []
+                                
+                                # Rating-based options
+                                if rating_val >= 4.5:
+                                    why_visit_pool.extend([
+                                        "Consistently rated among the best",
+                                        "Award-winning flavors that impress",
+                                        "Top-tier dining experience awaits",
+                                        "Chef's special creations are a must-try"
+                                    ])
+                                elif rating_val >= 4.0:
+                                    why_visit_pool.extend([
+                                        "Foodies keep coming back for more",
+                                        "Quality that exceeds expectations",
+                                        "Trusted by locals for great taste",
+                                        "Perfect spot for memorable meals"
+                                    ])
+                                
+                                # Popularity-based options
+                                if votes_val > 2000:
+                                    why_visit_pool.extend([
+                                        "Beloved by thousands of diners",
+                                        "Community favorite for years",
+                                        "Word-of-mouth success story"
+                                    ])
+                                elif votes_val > 500:
+                                    why_visit_pool.extend([
+                                        "Growing fanbase loves this place",
+                                        "Rising star in the food scene",
+                                        "Hidden gem gaining popularity"
+                                    ])
+                                
+                                # Price-based options
+                                if extracted_digits < 500:
+                                    why_visit_pool.extend([
+                                        "Big flavors without breaking the bank",
+                                        "Best bang for your buck",
+                                        "Affordable indulgence done right"
+                                    ])
+                                elif extracted_digits > 1500:
+                                    why_visit_pool.extend([
+                                        "Worth the splurge for special moments",
+                                        "Premium experience from start to finish",
+                                        "Fine dining at its finest"
+                                    ])
+                                
+                                # Cuisine-based options
+                                if secondary_cuisine:
+                                    why_visit_pool.extend([
+                                        f"Best of both {primary_cuisine} & {secondary_cuisine} worlds",
+                                        f"Creative fusion that surprises",
+                                        f"Unique pairing you won't find elsewhere"
+                                    ])
+                                else:
+                                    why_visit_pool.extend([
+                                        f"Masters of {primary_cuisine} cuisine",
+                                        f"Traditional recipes done right",
+                                        f"Authentic taste in every bite"
+                                    ])
+                                
+                                # Default options if pool is empty
+                                if not why_visit_pool:
+                                    why_visit_pool = [
+                                        "Satisfying flavors you'll remember",
+                                        "Great food, great mood guaranteed",
+                                        "A meal worth savoring"
+                                    ]
+                                
+                                why_visit = random.choice(why_visit_pool)
+                                
+                                st.write(f"🔥 **Famous for:** {famous_dish}")
+                                st.write(f"🎭 **Ambience:** {ambience}")
+                                st.write(f"💡 **Why visit:** {why_visit}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
