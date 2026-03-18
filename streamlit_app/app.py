@@ -148,47 +148,121 @@ def main():
 
         with st.spinner("Searching catalog and generating recommendations..."):
             try:
-                result = generate_llm_recommendations(prefs)
-                
-                recs = result.get("recommendations", [])
-                explanation = result.get("explanation", "")
-                
-                # Fallback 1: If no recommendations, relax cuisines and price
-                if not recs and (prefs.cuisines or prefs.price_category):
-                    prefs.cuisines = []
-                    prefs.price_category = None
-                    explanation = "We couldn't find exact matches, so we removed cuisine and price constraints to show you these options:\n"
-                    result = generate_llm_recommendations(prefs)
-                    recs = result.get("recommendations", [])
-                    
-                # Fallback 2: If still no recommendations, relax rating and place
-                if not recs and (prefs.min_rating > 3.0 or prefs.place):
-                    prefs.min_rating = 3.0
-                    prefs.place = None
-                    explanation = "We couldn't find matches nearby, so we expanded our search broadly:\n"
+                from phase2.recommender import load_catalog as _load_catalog
+                import pandas as pd
+
+                _df = _load_catalog()
+
+                # --- Step-by-step diagnosis to identify WHICH filter caused the empty result ---
+
+                def _in_location(df, place):
+                    if not place:
+                        return df
+                    p = place.lower()
+                    return df[df["city"].fillna("").str.lower().str.contains(p) |
+                              df["locality"].fillna("").str.lower().str.contains(p)]
+
+                def _has_cuisine(cuisine_list, wanted):
+                    if cuisine_list is None:
+                        return False
+                    try:
+                        lower = [str(c).lower() for c in cuisine_list]
+                    except Exception:
+                        return False
+                    return any(c in lower for c in wanted)
+
+                def _price_ok_check(cost, cat):
+                    if cost is None or (isinstance(cost, float) and pd.isna(cost)):
+                        return True
+                    try:
+                        cost = float(cost)
+                    except Exception:
+                        return True
+                    if cat == "low":
+                        return cost <= 500
+                    if cat == "medium":
+                        return 500 < cost <= 1000
+                    if cat == "high":
+                        return cost > 1000
+                    return True
+
+                # Check 1: location only
+                loc_df = _in_location(_df, place)
+
+                # Check 2: location + cuisine
+                cuisine_fail_msg = None
+                budget_fail_msg = None
+                rating_fail_msg = None
+
+                if cuisines:
+                    wanted_lower = [c.lower() for c in cuisines]
+                    cuisine_df = loc_df[loc_df["cuisines"].apply(lambda x: _has_cuisine(x, wanted_lower))]
+                    if cuisine_df.empty:
+                        location_label = place if place else "this location"
+                        cuisine_fail_msg = f"No restaurants found serving **{', '.join(cuisines)}** in **{location_label}**."
+                else:
+                    cuisine_df = loc_df
+
+                # Check 3: location + cuisine + budget
+                if cuisine_fail_msg is None and price_category != "Any":
+                    budget_df = cuisine_df[cuisine_df["average_cost_for_two"].apply(
+                        lambda v: _price_ok_check(v, price_category)
+                    )] if "average_cost_for_two" in cuisine_df.columns else cuisine_df
+                    if budget_df.empty:
+                        budget_label = {"low": "Low (Below ₹500)", "medium": "Medium (₹500–₹1000)", "high": "High (Above ₹1000)"}.get(price_category, price_category)
+                        location_label = place if place else "this location"
+                        budget_fail_msg = f"No restaurants found matching **{budget_label}** budget for **{', '.join(cuisines) if cuisines else 'the selected cuisines'}** in **{location_label}**."
+                else:
+                    budget_df = cuisine_df
+
+                # Check 4: location + cuisine + budget + rating
+                if cuisine_fail_msg is None and budget_fail_msg is None:
+                    rating_df = budget_df[
+                        (budget_df["rating"].notna()) & (budget_df["rating"] >= min_rating)
+                    ] if "rating" in budget_df.columns else budget_df
+                    if rating_df.empty and not budget_df.empty:
+                        rating_fail_msg = f"No restaurants meet the minimum rating of **{min_rating}⭐** for the selected filters. Try lowering the rating."
+
+                # --- Show specific error if any filter fails ---
+                if cuisine_fail_msg:
+                    st.warning(f"🍽️ {cuisine_fail_msg}")
+                elif budget_fail_msg:
+                    st.warning(f"💰 {budget_fail_msg}")
+                elif rating_fail_msg:
+                    st.warning(f"⭐ {rating_fail_msg}")
+                else:
+                    # All filters have results — proceed with LLM recommendations
                     result = generate_llm_recommendations(prefs)
                     recs = result.get("recommendations", [])
 
-                # Deduplicate recommendations by name
-                unique_recs = []
-                seen = set()
-                for r in recs:
-                    name = (r.get("name") or "").lower().strip()
-                    if name and name not in seen:
-                        seen.add(name)
-                        unique_recs.append(r)
-                recs = unique_recs
-                
-                # Sort by rating
-                def get_rating(r):
-                    try:
-                        return float(r.get("rating", 0) or 0)
-                    except (ValueError, TypeError):
-                        return 0.0
-                recs.sort(key=get_rating, reverse=True)
-                
-                if not recs:
-                    st.warning("No restaurants found matching your criteria even after relaxing filters. Try modifying your search.")
+                    # Deduplicate recommendations by name
+                    unique_recs = []
+                    seen = set()
+                    for r in recs:
+                        name = (r.get("name") or "").lower().strip()
+                        if name and name not in seen:
+                            seen.add(name)
+                            unique_recs.append(r)
+                    recs = unique_recs
+
+                    # Sort by: cuisine match count → rating → price relevance
+                    def sort_key(r):
+                        try:
+                            r_rating = float(r.get("rating", 0) or 0)
+                        except (ValueError, TypeError):
+                            r_rating = 0.0
+                        r_cuisines = r.get("cuisines", []) or []
+                        if isinstance(r_cuisines, list):
+                            r_lower = [c.lower() for c in r_cuisines]
+                        else:
+                            r_lower = [str(r_cuisines).lower()]
+                        cuisine_matches = sum(1 for c in (cuisines or []) if c.lower() in r_lower)
+                        return (cuisine_matches, r_rating)
+
+                    recs.sort(key=sort_key, reverse=True)
+
+                    if not recs:
+                        st.warning("No restaurants found matching your criteria. Try adjusting your filters.")
                 else:
                     st.success("Here are your recommendations!")
                     # The user requested to remove the visible insight text but keep it clean
